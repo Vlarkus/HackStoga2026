@@ -1,18 +1,30 @@
 <script setup lang="ts">
-import { onBeforeUnmount } from 'vue';
+import { watch, onBeforeUnmount } from 'vue';
 import { useEditor, EditorContent } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import { useEditorPersistence } from '../composables/useEditorPersistence';
+import { useProjectStore } from '../stores/useProjectStore';
 
-const { load, save, flush } = useEditorPersistence();
+const store = useProjectStore();
+const { save, flush } = useEditorPersistence();
 
 const editor = useEditor({
-  content: load(),
+  content: store.activeCommit.content,
   extensions: [StarterKit],
   onUpdate({ editor }) {
     save(editor.getHTML());
   },
 });
+
+// Reload content when user clicks a different commit node
+watch(
+  () => store.activeCommitId,
+  () => {
+    if (editor.value) {
+      editor.value.commands.setContent(store.activeCommit.content);
+    }
+  },
+);
 
 onBeforeUnmount(() => {
   flush();
