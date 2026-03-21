@@ -6,7 +6,7 @@ let model: ReturnType<InstanceType<typeof GoogleGenerativeAI>['getGenerativeMode
 
 function getModel() {
   if (!model) {
-    if (!apiKey || apiKey === 'your-key-here') {
+    if (!apiKey || apiKey === 'REDACTED_KEY_1') {
       throw new Error('Set VITE_GEMINI_API_KEY in frontend/.env')
     }
     const genAI = new GoogleGenerativeAI(apiKey)
@@ -77,7 +77,7 @@ Respond ONLY with a JSON object, no markdown fences, no extra text:
         err?.message?.includes('RESOURCE_EXHAUSTED')
 
       if (is429 && attempt < MAX_RETRIES) {
-        console.warn(`[AI] 429 rate limit — waiting ${delayMs}ms before retry`)
+        console.warn(`[AI] 429 rate limit — waiting ${delayMs} ms before retry`)
         await wait(delayMs)
         delayMs *= 2
         continue
