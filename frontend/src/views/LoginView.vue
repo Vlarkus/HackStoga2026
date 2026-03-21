@@ -9,7 +9,7 @@ const auth = useAuthStore()
 const router = useRouter()
 
 function handleSubmit() {
-  auth.login(email.value, password.value)
+  auth.login(email.value || 'guest', password.value)
   router.push('/workspace')
 }
 </script>
@@ -24,9 +24,8 @@ function handleSubmit() {
         <span :class="$style.fieldLabel">Email</span>
         <input
           v-model="email"
-          type="email"
+          type="text"
           placeholder="you@example.com"
-          required
           autocomplete="email"
         />
       </label>
@@ -37,7 +36,6 @@ function handleSubmit() {
           v-model="password"
           type="password"
           placeholder="••••••••"
-          required
           autocomplete="current-password"
         />
       </label>
@@ -61,7 +59,7 @@ function handleSubmit() {
 
 .card {
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   background: var(--color-bg-raised);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -107,7 +105,7 @@ function handleSubmit() {
 
 .field input {
   width: 100%;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
 }
 
 .submit {
