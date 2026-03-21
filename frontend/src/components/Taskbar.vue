@@ -6,6 +6,20 @@ const store = useProjectStore()
 
 <template>
   <header :class="$style.bar">
+    <div :class="$style.left">
+      <nav :class="$style.breadcrumb">
+        <button :class="$style.crumb" :title="'Switch project'">
+          {{ store.projectName }}
+        </button>
+        <span :class="$style.sep">/</span>
+        <button :class="$style.crumb" :title="'Switch branch'">
+          {{ store.branchName }}
+        </button>
+        <span :class="$style.sep">/</span>
+        <span :class="$style.crumbFile">{{ store.fileName }}</span>
+      </nav>
+    </div>
+
     <div :class="$style.center">
       <span :class="$style.indicator">
         <span :class="$style.dot" />
@@ -35,10 +49,40 @@ const store = useProjectStore()
   z-index: 100;
 }
 
-.center, .right {
+.left, .center, .right {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.crumb {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-branch);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+
+.crumb:hover {
+  background: rgba(157, 217, 210, 0.1);
+  color: var(--color-text);
+}
+
+.crumbFile {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
 
 .indicator {
