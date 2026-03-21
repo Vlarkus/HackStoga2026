@@ -1,32 +1,38 @@
 <script setup lang="ts">
+import Taskbar from '../components/Taskbar.vue';
+import Panel from '../components/Panel.vue';
+import GitGraph from '../components/GitGraph.vue';
 </script>
 
 <template>
-  <main :class="$style.home">
-    <h1 :class="$style.title">HackStoga 2026</h1>
-    <p :class="$style.subtitle">Let's build something.</p>
-  </main>
+  <div :class="$style.workspace">
+    <Taskbar />
+    <div :class="$style.canvas">
+
+      <Panel title="NOTES" accent="commit" :x="20" :y="20" :width="260" :height="580">
+        <template #badge><span class="hash">doc</span></template>
+        <p class="text-muted text-sm">Doc / notes panel</p>
+      </Panel>
+
+      <Panel title="GIT NODES" accent="branch" :x="300" :y="20" :width="720" :height="220">
+        <template #badge><span class="badge badge--branch">LIVE</span></template>
+        <GitGraph />
+      </Panel>
+
+    </div>
+  </div>
 </template>
 
 <style module>
-.home {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: var(--spacing-md);
+.workspace {
+  min-height: 100dvh;
+  background: var(--color-bg);
 }
 
-.title {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.subtitle {
-  font-size: 1.25rem;
-  color: var(--color-text);
-  opacity: 0.7;
+.canvas {
+  position: relative;
+  height: calc(100dvh - 48px);
+  margin-top: 48px;
+  overflow: hidden;
 }
 </style>
