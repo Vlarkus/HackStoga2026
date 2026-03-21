@@ -102,7 +102,7 @@ function targetLabel(targetId: string): string {
 .branch {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--clr-aqua);
+  color: var(--clr-green-bright);
   background: rgba(157, 217, 210, 0.08);
   padding: 2px var(--space-2);
   border-radius: var(--radius-sm);
@@ -131,7 +131,7 @@ function targetLabel(targetId: string): string {
 }
 
 .badgeOpen {
-  color: var(--clr-aqua);
+  color: var(--clr-green-bright);
   background: rgba(157, 217, 210, 0.08);
 }
 
@@ -141,7 +141,7 @@ function targetLabel(targetId: string): string {
 }
 
 .badgeRejected {
-  color: var(--clr-orange);
+  color: var(--clr-red);
   background: rgba(255, 107, 53, 0.08);
 }
 
@@ -171,9 +171,9 @@ function targetLabel(targetId: string): string {
 .rejectBtn {
   padding: var(--space-1) var(--space-3);
   background: rgba(255, 107, 53, 0.08);
-  border: 1px solid var(--clr-orange);
+  border: 1px solid var(--clr-red);
   border-radius: var(--radius-sm);
-  color: var(--clr-orange);
+  color: var(--clr-red);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: 700;

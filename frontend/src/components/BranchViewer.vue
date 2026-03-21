@@ -113,9 +113,9 @@ const emit = defineEmits<{
 .mergeBtn {
   padding: var(--space-1) var(--space-3);
   background: rgba(157, 217, 210, 0.08);
-  border: 1px solid var(--clr-aqua);
+  border: 1px solid var(--clr-green-bright);
   border-radius: var(--radius-sm);
-  color: var(--clr-aqua);
+  color: var(--clr-green-bright);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: 700;
@@ -131,9 +131,9 @@ const emit = defineEmits<{
 .proposeBtn {
   padding: var(--space-1) var(--space-3);
   background: rgba(122, 108, 93, 0.08);
-  border: 1px solid var(--clr-olive);
+  border: 1px solid var(--clr-gray);
   border-radius: var(--radius-sm);
-  color: var(--clr-olive);
+  color: var(--clr-gray);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: 700;

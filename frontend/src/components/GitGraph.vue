@@ -80,7 +80,7 @@ function handleNodeClick(node: Commit) {
         :key="edge.id"
         :d="edge.d"
         fill="none"
-        :stroke="edge.isMergeEdge ? 'var(--clr-aqua)' : (edge.type === 'future' ? 'var(--color-branch)' : 'var(--color-commit)')"
+        :stroke="edge.isMergeEdge ? 'var(--clr-green-bright)' : (edge.type === 'future' ? 'var(--color-branch)' : 'var(--color-commit)')"
         :stroke-opacity="edge.isMergeEdge ? 0.8 : (edge.type === 'future' ? 0.4 : 0.6)"
         stroke-width="1.5"
         :stroke-dasharray="edge.type === 'future' ? '6 4' : 'none'"
@@ -91,7 +91,7 @@ function handleNodeClick(node: Commit) {
     <g
       v-for="node in displayNodes"
       :key="node.id"
-      :style="node.type === 'current' ? 'filter: drop-shadow(0 0 6px var(--clr-mustard))' : ''"
+      :style="node.type === 'current' ? 'filter: drop-shadow(0 0 6px var(--clr-green))' : ''"
       :opacity="node.type === 'future' ? 0.5 : 1"
       :class="{ 'generating-pulse': node.id === '__generating__' }"
       style="cursor: pointer"
@@ -142,7 +142,7 @@ function handleNodeClick(node: Commit) {
         width="16"
         height="16"
         :transform="`rotate(45 ${layout.positions.get(node.id)!.x} ${layout.positions.get(node.id)!.y})`"
-        fill="var(--clr-aqua)"
+        fill="var(--clr-green-bright)"
       />
       <!-- Main circle (non-merge nodes) -->
       <circle
@@ -161,7 +161,7 @@ function handleNodeClick(node: Commit) {
         :width="hashChipRect(node.hash).w"
         :height="hashChipRect(node.hash).h"
         rx="3"
-        :fill="node.type === 'future' ? 'rgba(157,217,210,0.12)' : 'rgba(254,215,102,0.1)'"
+        :fill="node.type === 'future' ? 'rgba(168,230,176,0.12)' : 'rgba(126,203,139,0.1)'"
       />
 
       <!-- Hash chip: text -->
@@ -172,7 +172,7 @@ function handleNodeClick(node: Commit) {
         text-anchor="middle"
         font-family="Space Mono, monospace"
         font-size="9"
-        :fill="node.type === 'future' ? 'var(--color-branch)' : 'var(--clr-mustard)'"
+        :fill="node.type === 'future' ? 'var(--color-branch)' : 'var(--clr-green)'"
         letter-spacing="0.05em"
       >{{ node.hash }}</text>
 

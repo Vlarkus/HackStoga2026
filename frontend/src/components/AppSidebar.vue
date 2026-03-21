@@ -158,7 +158,7 @@ function handleLogout() {
   width: 100%;
   padding: var(--space-2) var(--space-3);
   background: var(--color-commit);
-  color: var(--clr-evergreen, #041b15);
+  color: var(--clr-black, #000000);
   border: none;
   border-radius: var(--radius-md);
   font-family: var(--font-mono);
@@ -175,7 +175,7 @@ function handleLogout() {
 .newProjectBtn:hover {
   background: var(--color-commit-dim);
   box-shadow: var(--glow-commit);
-  color: var(--clr-evergreen, #041b15);
+  color: var(--clr-black, #000000);
 }
 
 .newProjectIcon {

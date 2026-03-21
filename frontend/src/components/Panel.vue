@@ -117,13 +117,13 @@ onUnmounted(() => {
 }
 
 .panel-root.is-dragging {
-  border-color: var(--clr-mustard);
+  border-color: var(--clr-green);
   box-shadow: var(--glow-commit), var(--shadow-float);
   z-index: 50;
 }
 
 .panel-root.is-resizing {
-  border-color: var(--clr-aqua);
+  border-color: var(--clr-green-bright);
   box-shadow: var(--glow-branch), var(--shadow-float);
   z-index: 50;
 }

@@ -7,6 +7,15 @@ const store = useProjectStore()
 <template>
   <header :class="$style.bar">
     <div :class="$style.left">
+      <div :class="$style.brand">
+        <img
+          src="/images/forkcast-avatar-base.png"
+          alt="ForkCast"
+          :class="$style.avatar"
+        />
+        <span :class="$style.brandName">ForkCast</span>
+      </div>
+      <span :class="$style.sep">/</span>
       <nav :class="$style.breadcrumb">
         <button :class="$style.crumb" :title="'Switch project'">
           {{ store.projectName }}
@@ -55,6 +64,27 @@ const store = useProjectStore()
   gap: var(--space-3);
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-commit);
+  letter-spacing: -0.02em;
+}
+
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -75,7 +105,7 @@ const store = useProjectStore()
 }
 
 .crumb:hover {
-  background: rgba(157, 217, 210, 0.1);
+  background: rgba(126, 203, 139, 0.1);
   color: var(--color-text);
 }
 
@@ -92,7 +122,7 @@ const store = useProjectStore()
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--color-commit);
-  background: rgba(254, 215, 102, 0.08);
+  background: rgba(126, 203, 139, 0.08);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
   letter-spacing: 0.05em;

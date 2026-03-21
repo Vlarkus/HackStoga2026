@@ -86,7 +86,7 @@ function handleMerge() {
   font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: var(--clr-aqua);
+  color: var(--clr-green-bright);
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg-float);
@@ -127,7 +127,7 @@ function handleMerge() {
 .branchName {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--clr-aqua);
+  color: var(--clr-green-bright);
   background: rgba(157, 217, 210, 0.08);
   padding: 2px var(--space-2);
   border-radius: var(--radius-sm);
@@ -156,7 +156,7 @@ function handleMerge() {
 
 .arrow {
   font-size: var(--text-lg);
-  color: var(--clr-aqua);
+  color: var(--clr-green-bright);
 }
 
 .actions {
@@ -190,9 +190,9 @@ function handleMerge() {
 .mergeBtn {
   padding: var(--space-2) var(--space-4);
   background: rgba(157, 217, 210, 0.08);
-  border: 1px solid var(--clr-aqua);
+  border: 1px solid var(--clr-green-bright);
   border-radius: var(--radius-sm);
-  color: var(--clr-aqua);
+  color: var(--clr-green-bright);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: 700;
