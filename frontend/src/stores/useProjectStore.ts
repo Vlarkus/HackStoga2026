@@ -116,7 +116,7 @@ export const useProjectStore = defineStore('project', {
       this.previewCommitId = null
     },
 
-    async generateFutures(count: number) {
+    async generateFutures(count: number, userPrompt?: string) {
       this.isGenerating = true
 
       const activeCommit = this.commits.find(c => c.id === this.activeCommitId)!
@@ -130,9 +130,9 @@ export const useProjectStore = defineStore('project', {
       let predictions: Array<{ label: string; content: string }>
 
       try {
-        predictions = await generateFuturePredictions(plainText, count)
+        predictions = await generateFuturePredictions(plainText, count, userPrompt)
       } catch {
-        // Fallback to mock pool if API key missing or call fails
+        // Fallback to mock pool — userPrompt is ignored in fallback path
         await delay(400)
         predictions = []
         for (let i = 0; i < count; i++) {
