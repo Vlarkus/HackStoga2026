@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.46.0",
+    "@google/generative-ai": "^0.24.1",
     "node-fetch": "^2.7.0",
     "vue": "^3.4.27",
     "vue-router": "^4.3.3"
@@ -22,7 +23,6 @@
   "optionalDependencies": {
     "@rollup/rollup-win32-x64-msvc": "^4.59.1"
   },
-  
   "version": "1.0.0",
   "main": "index.js",
   "keywords": [],
@@ -30,4 +30,3 @@
   "license": "ISC",
   "description": ""
 }
-

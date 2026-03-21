@@ -1,20 +1,21 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const ai = new GoogleGenAI({ apiKey: "REDACTED_KEY_2" });
-
+const genAI = new GoogleGenerativeAI("REDACTED_KEY_3");
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 async function generateText(text) {
-  const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
-    contents: `You are a creative assistant. Given the following text, predict the most likely natural next direction it could evolve. Be concise and creative. Highlight errors.
+  const prompt = `You are a creative assistant. Given the following text, predict the most likely natural next direction it could evolve. Be concise and creative. Highlight errors.
 
 Text: "${text}"
 
 Respond ONLY as JSON, no extra text:
-{ "label": "Prediction", "content": "..." }`
-  });
+{ "label": "Prediction", "content": "..." }`;
 
-  return JSON.parse(response.text);
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const jsonString = response.text();
+
+  return JSON.parse(jsonString);
 }
 
 const result = await generateText("The hero walked into the dark forest");
