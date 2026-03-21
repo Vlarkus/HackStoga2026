@@ -4,7 +4,7 @@ import SidebarIcon from './icons/SidebarIcon.vue'
 import { useSidebarState } from '../composables/useSidebarState'
 import { useAuthStore } from '../stores/useAuthStore'
 
-const { collapsed, toggle } = useSidebarState()
+const { collapsed, expand, collapse } = useSidebarState()
 const auth = useAuthStore()
 const router = useRouter()
 
@@ -27,7 +27,11 @@ function handleLogout() {
 </script>
 
 <template>
-  <aside :class="[$style.sidebar, collapsed ? $style.collapsed : $style.expanded]">
+  <aside
+    :class="[$style.sidebar, collapsed ? $style.collapsed : $style.expanded]"
+    @mouseenter="expand"
+    @mouseleave="collapse"
+  >
     <!-- Logo -->
     <div :class="$style.logoWrap">
       <span v-if="collapsed" :class="$style.logoShort">FC</span>
@@ -78,12 +82,6 @@ function handleLogout() {
 
     <!-- Footer actions -->
     <div :class="$style.footer">
-      <button :class="$style.navItem" @click="toggle">
-        <span :class="[$style.navIcon, $style.collapseIcon, collapsed && $style.collapseIconRotated]">
-          <SidebarIcon name="collapse" />
-        </span>
-        <span :class="[$style.navLabel, collapsed && $style.navLabelHidden]">Collapse</span>
-      </button>
       <button :class="$style.navItem" @click="handleLogout">
         <span :class="$style.navIcon"><SidebarIcon name="logout" /></span>
         <span :class="[$style.navLabel, collapsed && $style.navLabelHidden]">Logout</span>

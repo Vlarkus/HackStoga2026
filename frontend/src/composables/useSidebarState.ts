@@ -1,12 +1,15 @@
 import { ref } from 'vue'
 
-const collapsed = ref(localStorage.getItem('fc-sidebar-collapsed') === 'true')
+const collapsed = ref(true)
 
 export function useSidebarState() {
-  function toggle() {
-    collapsed.value = !collapsed.value
-    localStorage.setItem('fc-sidebar-collapsed', String(collapsed.value))
+  function expand() {
+    collapsed.value = false
   }
 
-  return { collapsed, toggle }
+  function collapse() {
+    collapsed.value = true
+  }
+
+  return { collapsed, expand, collapse }
 }
