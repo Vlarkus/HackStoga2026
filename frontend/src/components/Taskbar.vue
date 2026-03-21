@@ -6,10 +6,6 @@ const store = useProjectStore()
 
 <template>
   <header :class="$style.bar">
-    <div :class="$style.left">
-      <span :class="$style.logo">FUTURE<span :class="$style.logoAccent">COMMIT</span></span>
-    </div>
-
     <div :class="$style.center">
       <span :class="$style.indicator">
         <span :class="$style.dot" />
@@ -27,10 +23,8 @@ const store = useProjectStore()
 
 <style module>
 .bar {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   height: 48px;
   display: flex;
   align-items: center;
@@ -41,23 +35,10 @@ const store = useProjectStore()
   z-index: 100;
 }
 
-.left, .center, .right {
+.center, .right {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-}
-
-.logo {
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--color-text-muted);
-}
-
-.logoAccent {
-  color: var(--color-commit);
 }
 
 .indicator {
