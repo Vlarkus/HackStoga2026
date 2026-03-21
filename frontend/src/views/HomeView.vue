@@ -25,12 +25,10 @@ const store = useProjectStore();
       <Panel title="GIT NODES" accent="branch" :x="300" :y="20" :width="720" :height="220">
         <template #badge><span class="badge badge--branch">LIVE</span></template>
         <GitGraph />
+        <template #footer>
+          <GenerateBar />
+        </template>
       </Panel>
-
-      <!-- Generate bar: docked flush below GIT NODES -->
-      <div :class="$style.generateBarWrap">
-        <GenerateBar />
-      </div>
 
       <!-- Branch viewer: shown when a future node is selected -->
       <Panel
@@ -63,14 +61,6 @@ const store = useProjectStore();
   height: calc(100dvh - 48px);
   margin-top: 48px;
   overflow: hidden;
-}
-
-/* Positioned flush below GIT NODES panel (y:20 + h:220 + 5px border gap = 245) */
-.generateBarWrap {
-  position: absolute;
-  left: 300px;
-  top: 245px;
-  width: 720px;
 }
 
 .closeBtn {

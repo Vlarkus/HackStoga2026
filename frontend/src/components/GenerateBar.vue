@@ -48,11 +48,6 @@ function increment() {
   height: 36px;
   padding: 0 var(--space-4);
   background: var(--color-bg-float);
-  border-top: 1px solid var(--color-border);
-  border-left: 1px solid var(--color-border);
-  border-right: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   font-family: var(--font-mono);
 }
 

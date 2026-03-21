@@ -119,7 +119,7 @@ export const useProjectStore = defineStore('project', {
       this.isGenerating = true
       await delay(400)
 
-      const currentCommit = this.commits.find(c => c.type === 'current')!
+      const currentCommit = this.commits.find(c => c.id === this.activeCommitId)!
       const maxLane = Math.max(...this.commits.map(c => c.lane))
       const newColumn = currentCommit.column + 1
 

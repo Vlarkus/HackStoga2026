@@ -9,16 +9,15 @@ const store = useProjectStore()
 // Placeholder node shown while generating — pulsing dot at next column
 const displayNodes = computed((): Commit[] => {
   if (!store.isGenerating) return store.graphNodes
-  const maxColumn = Math.max(...store.graphNodes.map(n => n.column))
-  const current = store.graphNodes.find(n => n.type === 'current')!
+  const activeCommit = store.graphNodes.find(n => n.id === store.activeCommitId)!
   const placeholder: Commit = {
     id: '__generating__',
     label: '…',
     hash: '……',
     type: 'future',
-    parents: [current.id],
+    parents: [activeCommit.id],
     lane: Math.max(...store.graphNodes.map(n => n.lane)) + 1,
-    column: maxColumn + 1,
+    column: activeCommit.column + 1,
     content: '',
   }
   return [...store.graphNodes, placeholder]
