@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-const collapsed = ref(localStorage.getItem('fc-sidebar-collapsed') !== 'false')
+const collapsed = ref(localStorage.getItem('fc-sidebar-collapsed') === 'true')
 
 export function useSidebarState() {
   function toggle() {
