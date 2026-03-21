@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { generateFuturePredictions } from '../ai'
 
 export type CommitType = 'commit' | 'current' | 'future'
 
@@ -117,26 +118,41 @@ export const useProjectStore = defineStore('project', {
 
     async generateFutures(count: number) {
       this.isGenerating = true
-      await delay(400)
 
       const activeCommit = this.commits.find(c => c.id === this.activeCommitId)!
       const maxLane = Math.max(...this.commits.map(c => c.lane))
       const maxColumn = Math.max(...this.commits.map(c => c.column))
       const newColumn = maxColumn + 1
 
-      for (let i = 0; i < count; i++) {
-        const poolItem = MOCK_POOL[poolIndex % MOCK_POOL.length]
-        poolIndex++
+      // Strip HTML tags to get plain text for the prompt
+      const plainText = activeCommit.content.replace(/<[^>]*>/g, ' ').trim()
 
+      let predictions: Array<{ label: string; content: string }>
+
+      try {
+        predictions = await generateFuturePredictions(plainText, count)
+      } catch {
+        // Fallback to mock pool if API key missing or call fails
+        await delay(400)
+        predictions = []
+        for (let i = 0; i < count; i++) {
+          const poolItem = MOCK_POOL[poolIndex % MOCK_POOL.length]
+          poolIndex++
+          predictions.push({ label: poolItem.label, content: poolItem.text })
+        }
+      }
+
+      for (let i = 0; i < predictions.length; i++) {
+        const pred = predictions[i]
         this.commits.push({
           id: `future-${Date.now()}-${i}`,
-          label: poolItem.label,
+          label: pred.label,
           hash: Math.random().toString(16).slice(2, 8),
           type: 'future',
           parents: [activeCommit.id],
           lane: maxLane + 1 + i,
           column: newColumn,
-          content: activeCommit.content + '<p>' + poolItem.text + '</p>',
+          content: activeCommit.content + '<p>' + pred.content + '</p>',
         })
       }
 

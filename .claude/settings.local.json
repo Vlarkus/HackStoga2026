@@ -7,7 +7,21 @@
       "Bash(npm install:*)",
       "Bash(npm search:*)",
       "Bash(npm run:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(git merge:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill:*)",
+      "Bash(lsof -ti:5173 -ti:5174 -ti:5175)",
+      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object OwningProcess\")",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 41396 -Force\" 2>&1)",
+      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 5173,5174,5175,5176,5177 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \\\\$_.OwningProcess -Force -ErrorAction SilentlyContinue }\" 2>&1)",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(curl -s http://localhost:5173/api/health)",
+      "Bash(powershell.exe -Command \"Invoke-WebRequest -Uri http://localhost:3000/api/health -UseBasicParsing | Select-Object -ExpandProperty Content\" 2>&1)",
+      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 3000,5173,5174,5175,5176,5177 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \\\\$_.OwningProcess -Force -ErrorAction SilentlyContinue }\" 2>&1)",
+      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 3000,5173 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }\")"
     ]
   },
   "disabledMcpjsonServers": [
