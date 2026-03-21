@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useProjectStore } from '../stores/useProjectStore';
 import Taskbar from '../components/Taskbar.vue';
 import Panel from '../components/Panel.vue';
@@ -6,8 +7,31 @@ import MainEditor from '../components/MainEditor.vue';
 import GitGraph from '../components/GitGraph.vue';
 import GenerateBar from '../components/GenerateBar.vue';
 import BranchViewer from '../components/BranchViewer.vue';
+import MergeDialog from '../components/MergeDialog.vue';
+import ProposalPanel from '../components/ProposalPanel.vue';
 
 const store = useProjectStore();
+
+const showMergeDialog = ref(false);
+const mergeSourceId = ref('');
+const showProposals = ref(false);
+
+function handleMerge() {
+  if (!store.previewCommitId || !store.activeCommitId) return;
+  mergeSourceId.value = store.previewCommitId;
+  showMergeDialog.value = true;
+}
+
+function handlePropose() {
+  if (!store.previewCommitId || !store.activeCommitId) return;
+  store.createProposal(
+    store.previewCommitId,
+    store.activeCommitId,
+    `Merge ${store.previewCommit?.label} into ${store.activeCommit.label}`
+  );
+  showProposals.value = true;
+  store.clearPreview();
+}
 </script>
 
 <template>
@@ -43,10 +67,31 @@ const store = useProjectStore();
         <template #badge>
           <button :class="$style.closeBtn" @click="store.clearPreview()">×</button>
         </template>
-        <BranchViewer />
+        <BranchViewer @merge="handleMerge" @propose="handlePropose" />
+      </Panel>
+
+      <!-- Proposals panel -->
+      <Panel
+        v-if="showProposals || (store.proposals && store.proposals.length > 0)"
+        title="PROPOSALS"
+        accent="branch"
+        :x="500"
+        :y="280"
+        :width="520"
+        :height="320"
+      >
+        <ProposalPanel />
       </Panel>
 
     </div>
+
+    <!-- Merge dialog overlay -->
+    <MergeDialog
+      v-if="showMergeDialog"
+      :source-id="mergeSourceId"
+      :target-id="store.activeCommitId"
+      @close="showMergeDialog = false"
+    />
   </div>
 </template>
 

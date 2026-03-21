@@ -2,6 +2,11 @@
 import { useProjectStore } from '../stores/useProjectStore'
 
 const store = useProjectStore()
+
+const emit = defineEmits<{
+  merge: []
+  propose: []
+}>()
 </script>
 
 <template>
@@ -15,6 +20,12 @@ const store = useProjectStore()
       <span :class="$style.hash">{{ store.previewCommit.hash }}</span>
       <button :class="$style.adoptBtn" @click="store.adoptPreview()">
         ADOPT
+      </button>
+      <button :class="$style.mergeBtn" @click="emit('merge')">
+        MERGE
+      </button>
+      <button :class="$style.proposeBtn" @click="emit('propose')">
+        PROPOSE
       </button>
     </div>
   </div>
@@ -97,5 +108,41 @@ const store = useProjectStore()
 
 .adoptBtn:hover {
   background: rgba(254, 215, 102, 0.15);
+}
+
+.mergeBtn {
+  padding: var(--space-1) var(--space-3);
+  background: rgba(157, 217, 210, 0.08);
+  border: 1px solid var(--clr-aqua);
+  border-radius: var(--radius-sm);
+  color: var(--clr-aqua);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+
+.mergeBtn:hover {
+  background: rgba(157, 217, 210, 0.15);
+}
+
+.proposeBtn {
+  padding: var(--space-1) var(--space-3);
+  background: rgba(122, 108, 93, 0.08);
+  border: 1px solid var(--clr-olive);
+  border-radius: var(--radius-sm);
+  color: var(--clr-olive);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+
+.proposeBtn:hover {
+  background: rgba(122, 108, 93, 0.15);
 }
 </style>
