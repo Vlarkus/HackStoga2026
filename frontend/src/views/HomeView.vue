@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Taskbar from '../components/Taskbar.vue';
 import Panel from '../components/Panel.vue';
+import MainEditor from '../components/MainEditor.vue';
 import GitGraph from '../components/GitGraph.vue';
 </script>
 
@@ -9,9 +10,9 @@ import GitGraph from '../components/GitGraph.vue';
     <Taskbar />
     <div :class="$style.canvas">
 
-      <Panel title="NOTES" accent="commit" :x="20" :y="20" :width="260" :height="580">
+      <Panel title="MAIN" accent="commit" :x="20" :y="20" :width="260" :height="580">
         <template #badge><span class="hash">doc</span></template>
-        <p class="text-muted text-sm">Doc / notes panel</p>
+        <MainEditor />
       </Panel>
 
       <Panel title="GIT NODES" accent="branch" :x="300" :y="20" :width="720" :height="220">
