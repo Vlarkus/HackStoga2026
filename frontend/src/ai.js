@@ -13,9 +13,8 @@ Respond ONLY as JSON, no extra text:
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
-  const jsonString = response.text();
+  return response.text();
 
-  return JSON.parse(jsonString);
 }
 
 const result = await generateText("The hero walked into the dark forest");
