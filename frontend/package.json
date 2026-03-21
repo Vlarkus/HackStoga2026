@@ -1,5 +1,6 @@
 {
   "name": "hackstoga2026-frontend",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -7,9 +8,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^1.46.0",
+    "@google/generative-ai": "^0.24.1",
     "@isomorphic-git/lightning-fs": "^4.6.2",
     "buffer": "^6.0.3",
     "isomorphic-git": "^1.37.4",
+    "node-fetch": "^2.7.0",
     "vue": "^3.4.27",
     "vue-router": "^4.3.3"
   },
@@ -21,5 +25,11 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-win32-x64-msvc": "^4.59.1"
-  }
+  },
+  "version": "1.0.0",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
