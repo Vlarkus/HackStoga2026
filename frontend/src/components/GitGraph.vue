@@ -95,7 +95,7 @@ function handleNodeClick(node: Commit) {
       style="cursor: pointer"
       @click="handleNodeClick(node)"
     >
-      <!-- Outer ring: current node (mustard) -->
+      <!-- Outer ring: current committed state (mustard, always on current-type node) -->
       <circle
         v-if="node.type === 'current'"
         :cx="layout.positions.get(node.id)!.x"
@@ -105,6 +105,19 @@ function handleNodeClick(node: Commit) {
         stroke="var(--color-commit)"
         stroke-opacity="0.4"
         stroke-width="1.5"
+      />
+
+      <!-- Active branch point ring (mustard, solid — shows where futures will branch from) -->
+      <circle
+        v-if="node.id === store.activeCommitId && node.type !== 'current'"
+        :cx="layout.positions.get(node.id)!.x"
+        :cy="layout.positions.get(node.id)!.y"
+        r="14"
+        fill="none"
+        stroke="var(--color-commit)"
+        stroke-opacity="0.9"
+        stroke-width="2"
+        stroke-dasharray="4 2"
       />
 
       <!-- Outer ring: previewed future node (aqua) -->
