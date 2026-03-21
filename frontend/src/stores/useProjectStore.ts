@@ -1,5 +1,16 @@
 import { defineStore } from 'pinia'
 import { generateFuturePredictions } from '../ai'
+import {
+  BUSINESS_CONCEPT,
+  HIRING_STRATEGY,
+  HIRE_FAST,
+  CULTURE_FIRST,
+  REMOTE_GLOBAL,
+  POOL_TOOL,
+  HR_PLATFORM,
+  SMART_HOME,
+  MERGED_HIRING_PRODUCT,
+} from './demoContent'
 
 export type CommitType = 'commit' | 'current' | 'future'
 
@@ -14,30 +25,38 @@ export interface Commit {
   column: number
 }
 
+export interface Proposal {
+  id: string
+  sourceId: string
+  targetId: string
+  summary: string
+  status: 'open' | 'approved' | 'rejected'
+}
+
 const MOCK_POOL: Array<{ label: string; text: string }> = [
   {
-    label: 'far, far away',
-    text: 'Far, far away — the signal led him to the edge of the mapped universe, where the stars thinned to nothing.',
+    label: 'pool owners tool',
+    text: 'A vertical SaaS platform for pool service companies — scheduling, chemical tracking, equipment logs, and automated dosing recommendations in one place.',
   },
   {
-    label: 'right next door',
-    text: "Right next door — the signal was coming from his neighbor's basement. The light under the door had been on for three days.",
+    label: 'AI HR platform',
+    text: 'An AI-powered hiring co-pilot for small teams — automated screening, culture-fit scoring, and transparent candidate evaluation at a fraction of recruiter costs.',
   },
   {
-    label: 'quite a bit away',
-    text: 'Quite a bit away — three days through asteroid fields stood between Kael and the source. He packed light.',
+    label: 'smart home suite',
+    text: 'A unified control hub for multi-property smart home management — fleet-level dashboards, unified automations, and single-stream notifications across all connected devices.',
   },
   {
-    label: 'from the past',
-    text: 'From the past — the timestamp read 400 years ago. Whatever sent it had been waiting a long time.',
+    label: 'freemium SaaS model',
+    text: 'A tiered pricing approach starting with a generous free plan to drive adoption, converting power users to paid tiers through usage-based limits and premium integrations.',
   },
   {
-    label: 'a warning',
-    text: 'A warning — the same four words, repeating. DO NOT COME HERE.',
+    label: 'enterprise B2B pivot',
+    text: 'Targeting enterprise customers with white-label solutions, SSO integration, and dedicated account management — higher ACV, longer sales cycles, but dramatically better retention.',
   },
   {
-    label: 'an invitation',
-    text: 'An invitation — just coordinates. Nothing else. Just coordinates and a single blinking cursor.',
+    label: 'marketplace platform',
+    text: 'A two-sided marketplace connecting small business owners with vetted fractional executives — CMOs, CFOs, and COOs available on-demand for strategic planning sprints.',
   },
 ]
 
@@ -50,47 +69,67 @@ function delay(ms: number): Promise<void> {
 
 const SEED_COMMITS: Commit[] = [
   {
-    id: 'a',
-    label: 'initial draft',
+    id: 'biz-concept',
+    label: 'business concept',
     hash: 'a1b2c3',
     type: 'commit',
     parents: [],
     lane: 0,
     column: 0,
-    content: '<p>Once upon a time in a galaxy...</p>',
+    content: BUSINESS_CONCEPT,
   },
   {
-    id: 'b',
-    label: 'expanded opening',
-    hash: 'b4d5e6',
+    id: 'hiring',
+    label: 'hiring strategy',
+    hash: 'd4e5f6',
     type: 'commit',
-    parents: ['a'],
+    parents: ['biz-concept'],
     lane: 0,
     column: 1,
-    content: '<p>Once upon a time in a galaxy, there lived a young inventor named Kael.</p>',
+    content: HIRING_STRATEGY,
   },
   {
-    id: 'c',
-    label: 'added tension',
-    hash: 'c7f8a9',
-    type: 'current',
-    parents: ['b'],
-    lane: 0,
+    id: 'hire-fast',
+    label: 'hire fast, fire fast',
+    hash: '7a8b9c',
+    type: 'future',
+    parents: ['hiring'],
+    lane: 1,
     column: 2,
-    content:
-      '<p>Once upon a time in a galaxy, there lived a young inventor named Kael. One morning, he discovered a signal no one else could hear.</p>',
+    content: HIRE_FAST,
+  },
+  {
+    id: 'culture',
+    label: 'culture-first',
+    hash: 'd0e1f2',
+    type: 'future',
+    parents: ['hiring'],
+    lane: 2,
+    column: 2,
+    content: CULTURE_FIRST,
+  },
+  {
+    id: 'remote',
+    label: 'remote-first global',
+    hash: '3a4b5c',
+    type: 'future',
+    parents: ['hiring'],
+    lane: 3,
+    column: 2,
+    content: REMOTE_GLOBAL,
   },
 ]
 
 export const useProjectStore = defineStore('project', {
   state: () => ({
-    projectName: 'Project Alpha',
+    projectName: 'FutureCommit',
     branchName: 'main',
     fileName: 'document.txt',
     commits: [...SEED_COMMITS] as Commit[],
-    activeCommitId: 'c' as string,
+    activeCommitId: 'hiring' as string,
     previewCommitId: null as string | null,
     isGenerating: false,
+    proposals: [] as Proposal[],
   }),
 
   getters: {
@@ -103,6 +142,9 @@ export const useProjectStore = defineStore('project', {
         : null,
 
     graphNodes: (state): Commit[] => state.commits,
+
+    openProposals: (state): Proposal[] =>
+      state.proposals.filter(p => p.status === 'open'),
   },
 
   actions: {
@@ -166,11 +208,6 @@ export const useProjectStore = defineStore('project', {
       if (!this.previewCommitId) return
       const adoptedId = this.previewCommitId
 
-      // Remove all futures except the adopted one
-      this.commits = this.commits.filter(
-        c => c.type !== 'future' || c.id === adoptedId,
-      )
-
       // Demote old current → commit
       const oldCurrent = this.commits.find(c => c.type === 'current')
       if (oldCurrent) oldCurrent.type = 'commit'
@@ -180,6 +217,56 @@ export const useProjectStore = defineStore('project', {
       if (adopted) adopted.type = 'current'
 
       this.activeCommitId = adoptedId
+      this.previewCommitId = null
+    },
+
+    createProposal(sourceId: string, targetId: string, summary: string) {
+      this.proposals.push({
+        id: `proposal-${Date.now()}`,
+        sourceId,
+        targetId,
+        summary,
+        status: 'open',
+      })
+    },
+
+    approveProposal(proposalId: string) {
+      const proposal = this.proposals.find(p => p.id === proposalId)
+      if (!proposal) return
+      proposal.status = 'approved'
+      this.mergeInto(proposal.sourceId, proposal.targetId)
+    },
+
+    rejectProposal(proposalId: string) {
+      const proposal = this.proposals.find(p => p.id === proposalId)
+      if (!proposal) return
+      proposal.status = 'rejected'
+    },
+
+    mergeInto(sourceId: string, targetId: string) {
+      const source = this.commits.find(c => c.id === sourceId)
+      const target = this.commits.find(c => c.id === targetId)
+      if (!source || !target) return
+
+      const maxColumn = Math.max(...this.commits.map(c => c.column))
+
+      const mergeCommit: Commit = {
+        id: `merge-${Date.now()}`,
+        label: `merged: ${source.label} + ${target.label}`,
+        hash: Math.random().toString(16).slice(2, 8),
+        type: 'current',
+        parents: [targetId, sourceId],
+        lane: 0,
+        column: maxColumn + 1,
+        content: MERGED_HIRING_PRODUCT,
+      }
+
+      // Demote old current
+      const oldCurrent = this.commits.find(c => c.type === 'current')
+      if (oldCurrent) oldCurrent.type = 'commit'
+
+      this.commits.push(mergeCommit)
+      this.activeCommitId = mergeCommit.id
       this.previewCommitId = null
     },
   },
