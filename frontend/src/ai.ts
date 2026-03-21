@@ -39,7 +39,7 @@ export async function generateFuturePredictions(
   text: string,
   count: number,
   userPrompt?: string,
-): Promise<FuturePrediction[]> {
+): Promise<SingleCompletion[]> {
   const m = getModel()
 
   const directionLine = userPrompt?.trim()
@@ -53,11 +53,11 @@ Give each one a brief label (2-4 words).${directionLine}
 
 Text:
 """
-${commitText}
+${text}
 """
 
-Respond ONLY with a JSON object, no markdown fences, no extra text:
-{"label": "short label", "content": "the full evolved text including all previous content plus your additions"}`
+Respond ONLY with a JSON array of ${count} objects, no markdown fences, no extra text:
+[{"label": "short label", "content": "the full evolved text including all previous content plus your additions"}, ...]`
 
   const MAX_RETRIES = 2
   let delayMs = 3000
@@ -72,7 +72,7 @@ Respond ONLY with a JSON object, no markdown fences, no extra text:
       // Strip markdown code fences if Gemini wraps them
       const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
 
-      return JSON.parse(cleaned) as SingleCompletion
+      return JSON.parse(cleaned) as SingleCompletion[]
     } catch (err: any) {
       console.error(`[AI] Error:`, err?.message ?? err)
 
