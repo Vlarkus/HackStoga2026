@@ -21,7 +21,8 @@
       "Bash(curl -s http://localhost:5173/api/health)",
       "Bash(powershell.exe -Command \"Invoke-WebRequest -Uri http://localhost:3000/api/health -UseBasicParsing | Select-Object -ExpandProperty Content\" 2>&1)",
       "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 3000,5173,5174,5175,5176,5177 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \\\\$_.OwningProcess -Force -ErrorAction SilentlyContinue }\" 2>&1)",
-      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 3000,5173 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }\")"
+      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 3000,5173 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }\")",
+      "Bash(git pull:*)"
     ]
   },
   "disabledMcpjsonServers": [
