@@ -26,14 +26,19 @@ export interface FuturePrediction {
  */
 export async function generateFuturePredictions(
   text: string,
-  count: number
+  count: number,
+  userPrompt?: string,
 ): Promise<FuturePrediction[]> {
   const m = getModel()
+
+  const directionLine = userPrompt?.trim()
+    ? `\nThe user wants the futures to go in this direction: ${userPrompt.trim()}`
+    : ''
 
   const prompt = `You are a creative writing assistant for a version-control app called "Future-Commit".
 Given the following text, predict ${count} distinct and creative directions it could evolve next.
 Each prediction should be a short continuation (1-3 sentences).
-Give each one a brief label (2-4 words).
+Give each one a brief label (2-4 words).${directionLine}
 
 Text:
 """
