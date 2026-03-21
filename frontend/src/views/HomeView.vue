@@ -81,13 +81,14 @@ const branchH = panelH - gitH - GAP;
 
 <style module>
 .workspace {
-  min-height: 100dvh;
+  min-height: 100%;
   background: var(--color-bg);
 }
 
 .canvas {
   position: relative;
-  height: 100dvh;
+  height: calc(100% - 48px);
+  min-height: calc(100dvh - 48px);
   overflow: hidden;
 }
 
