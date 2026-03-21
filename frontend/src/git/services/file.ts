@@ -1,4 +1,4 @@
-import git from 'isomorphic-git'
+import * as git from 'isomorphic-git'
 import { fs, getRepoDir, DOCUMENT_FILE, getDocumentPath } from '../config'
 
 /** Read the document from the working directory */

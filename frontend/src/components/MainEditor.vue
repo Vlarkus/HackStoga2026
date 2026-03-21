@@ -16,6 +16,8 @@ const editor = useEditor({
   },
 });
 
+defineExpose({ editor });
+
 // Reload content when user clicks a different commit node
 watch(
   () => store.activeCommitId,
@@ -34,33 +36,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div :class="$style.root">
-    <div v-if="editor" :class="$style.toolbar">
-      <button
-        :class="[$style.btn, { [$style.active]: editor.isActive('bold') }]"
-        @mousedown.prevent="editor.chain().focus().toggleBold().run()"
-        title="Bold"
-      >B</button>
-      <button
-        :class="[$style.btn, { [$style.active]: editor.isActive('italic') }]"
-        @mousedown.prevent="editor.chain().focus().toggleItalic().run()"
-        title="Italic"
-      ><em>I</em></button>
-      <button
-        :class="[$style.btn, { [$style.active]: editor.isActive('heading', { level: 1 }) }]"
-        @mousedown.prevent="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-        title="Heading 1"
-      >H1</button>
-      <button
-        :class="[$style.btn, { [$style.active]: editor.isActive('heading', { level: 2 }) }]"
-        @mousedown.prevent="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        title="Heading 2"
-      >H2</button>
-      <button
-        :class="[$style.btn, { [$style.active]: editor.isActive('bulletList') }]"
-        @mousedown.prevent="editor.chain().focus().toggleBulletList().run()"
-        title="Bullet list"
-      >&#8226;&#8212;</button>
-    </div>
     <EditorContent :editor="editor" :class="$style.editorWrap" />
   </div>
 </template>
@@ -73,40 +48,6 @@ onBeforeUnmount(() => {
   user-select: text;
 }
 
-.toolbar {
-  display: flex;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-2);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-float);
-  flex-shrink: 0;
-}
-
-.btn {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--color-text-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-2);
-  cursor: pointer;
-  line-height: 1;
-  transition: color var(--duration-base), border-color var(--duration-base),
-              background var(--duration-base);
-}
-
-.btn:hover {
-  color: var(--color-text);
-  border-color: var(--color-border);
-}
-
-.active {
-  color: var(--color-commit);
-  border-color: var(--color-commit);
-  background: rgba(254, 215, 102, 0.08);
-}
 
 .editorWrap {
   flex: 1;
