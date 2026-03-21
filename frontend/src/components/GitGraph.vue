@@ -28,7 +28,7 @@ const layout = computed(() => computeGraphLayout(displayNodes.value))
 
 const edges = computed(() => {
   const { positions } = layout.value
-  const result: Array<{ id: string; d: string; type: Commit['type'] }> = []
+  const result: Array<{ id: string; d: string; type: Commit['type']; isMergeEdge: boolean }> = []
 
   for (const node of displayNodes.value) {
     const to = positions.get(node.id)
@@ -41,6 +41,7 @@ const edges = computed(() => {
         id: `${parentId}-${node.id}`,
         d: `M ${from.x},${from.y} C ${midX},${from.y} ${midX},${to.y} ${to.x},${to.y}`,
         type: node.type,
+        isMergeEdge: node.parents.indexOf(parentId) > 0,
       })
     }
   }
@@ -79,8 +80,8 @@ function handleNodeClick(node: Commit) {
         :key="edge.id"
         :d="edge.d"
         fill="none"
-        :stroke="edge.type === 'future' ? 'var(--color-branch)' : 'var(--color-commit)'"
-        :stroke-opacity="edge.type === 'future' ? 0.4 : 0.6"
+        :stroke="edge.isMergeEdge ? 'var(--clr-aqua)' : (edge.type === 'future' ? 'var(--color-branch)' : 'var(--color-commit)')"
+        :stroke-opacity="edge.isMergeEdge ? 0.8 : (edge.type === 'future' ? 0.4 : 0.6)"
         stroke-width="1.5"
         :stroke-dasharray="edge.type === 'future' ? '6 4' : 'none'"
       />
@@ -133,8 +134,19 @@ function handleNodeClick(node: Commit) {
         stroke-width="1.5"
       />
 
-      <!-- Main circle -->
+      <!-- Merge node: diamond shape -->
+      <rect
+        v-if="node.parents.length > 1"
+        :x="layout.positions.get(node.id)!.x - 8"
+        :y="layout.positions.get(node.id)!.y - 8"
+        width="16"
+        height="16"
+        :transform="`rotate(45 ${layout.positions.get(node.id)!.x} ${layout.positions.get(node.id)!.y})`"
+        fill="var(--clr-aqua)"
+      />
+      <!-- Main circle (non-merge nodes) -->
       <circle
+        v-else
         :cx="layout.positions.get(node.id)!.x"
         :cy="layout.positions.get(node.id)!.y"
         :r="NODE_R[node.type]"

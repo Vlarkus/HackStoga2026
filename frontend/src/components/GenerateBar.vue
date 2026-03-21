@@ -35,7 +35,7 @@ function increment() {
       @click="store.generateFutures(count)"
     >
       <span :class="{ [$style.spin]: store.isGenerating }">◈</span>
-      {{ store.isGenerating ? 'GENERATING…' : 'GENERATE' }}
+      {{ store.isGenerating ? 'GENERATING…' : 'BRAINSTORM' }}
     </button>
   </div>
 </template>
