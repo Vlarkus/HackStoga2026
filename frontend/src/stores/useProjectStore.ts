@@ -91,6 +91,9 @@ const SEED_COMMITS: Commit[] = [
 
 export const useProjectStore = defineStore('project', {
   state: () => ({
+    projectName: 'Project Alpha',
+    branchName: 'main',
+    fileName: 'document.txt',
     commits: [...SEED_COMMITS] as Commit[],
     activeCommitId: 'c' as string,
     previewCommitId: null as string | null,

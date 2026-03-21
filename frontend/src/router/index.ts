@@ -21,7 +21,7 @@ const router = createRouter({
       children: [
         { path: '', redirect: '/workspace' },
         { path: 'workspace', name: 'workspace', component: () => import('../views/HomeView.vue') },
-        { path: 'history', name: 'history', component: () => import('../views/HistoryView.vue') },
+        { path: 'projects', name: 'projects', component: () => import('../views/ProjectsView.vue') },
         { path: 'settings', name: 'settings', component: () => import('../views/SettingsView.vue') },
         { path: 'account', name: 'account', component: () => import('../views/AccountView.vue') },
         { path: 'api', name: 'api-docs', component: () => import('../views/ApiDocsView.vue') },

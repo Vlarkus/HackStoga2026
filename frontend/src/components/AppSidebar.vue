@@ -10,7 +10,7 @@ const router = useRouter()
 
 const navMain = [
   { to: '/workspace', icon: 'workspace', label: 'Workspace' },
-  { to: '/history', icon: 'history', label: 'History' },
+  { to: '/projects', icon: 'history', label: 'Projects' },
   { to: '/api', icon: 'api', label: 'API' },
   { to: '/cli', icon: 'cli', label: 'CLI' },
 ]
@@ -32,6 +32,14 @@ function handleLogout() {
     <div :class="$style.logoWrap">
       <span v-if="collapsed" :class="$style.logoShort">FC</span>
       <span v-else :class="$style.logoFull">FUTURE<span :class="$style.logoAccent">COMMIT</span></span>
+    </div>
+
+    <!-- New Project -->
+    <div :class="$style.newProjectWrap">
+      <RouterLink to="/workspace" :class="$style.newProjectBtn">
+        <span :class="$style.newProjectIcon">+</span>
+        <span :class="[$style.navLabel, collapsed && $style.navLabelHidden]">New Project</span>
+      </RouterLink>
     </div>
 
     <!-- Main nav -->
@@ -137,6 +145,46 @@ function handleLogout() {
 
 .logoAccent {
   color: var(--color-commit);
+}
+
+.newProjectWrap {
+  padding: var(--space-3) var(--space-3);
+  flex-shrink: 0;
+}
+
+.newProjectBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-commit);
+  color: var(--clr-evergreen, #041b15);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.newProjectBtn:hover {
+  background: var(--color-commit-dim);
+  box-shadow: var(--glow-commit);
+  color: var(--clr-evergreen, #041b15);
+}
+
+.newProjectIcon {
+  font-size: var(--text-md);
+  font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .nav {
