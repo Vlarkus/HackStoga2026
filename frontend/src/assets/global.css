@@ -96,6 +96,10 @@
   --duration-fast: 120ms;
   --duration-base: 220ms;
   --duration-slow: 400ms;
+
+  /* --- Layout --- */
+  --sidebar-width: 220px;
+  --sidebar-width-collapsed: 64px;
 }
 
 /* ============================================
