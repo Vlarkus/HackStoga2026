@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
-import { generateFuturePredictions } from '../ai'
+import { generateSingleCompletion, DEFAULT_SYSTEM_PROMPT } from '../ai'
 
 export type CommitType = 'commit' | 'current' | 'future'
+
+export interface GenerateOptions {
+  branches: number
+  depth: number
+  systemPrompt: string
+  userPrompt: string
+}
 
 export interface Commit {
   id: string
@@ -116,44 +123,61 @@ export const useProjectStore = defineStore('project', {
       this.previewCommitId = null
     },
 
-    async generateFutures(count: number) {
+    async generateFutures(options: GenerateOptions) {
       this.isGenerating = true
 
-      const activeCommit = this.commits.find(c => c.id === this.activeCommitId)!
+      const { branches, depth, systemPrompt, userPrompt } = options
+      const sourceCommit = this.commits.find(c => c.id === this.activeCommitId)!
       const maxLane = Math.max(...this.commits.map(c => c.lane))
-      const maxColumn = Math.max(...this.commits.map(c => c.column))
-      const newColumn = maxColumn + 1
+      const baseColumn = Math.max(...this.commits.map(c => c.column))
 
-      // Strip HTML tags to get plain text for the prompt
-      const plainText = activeCommit.content.replace(/<[^>]*>/g, ' ').trim()
+      // Strip HTML tags to get plain text for the AI
+      const sourceText = sourceCommit.content.replace(/<[^>]*>/g, ' ').trim()
 
-      let predictions: Array<{ label: string; content: string }>
+      for (let b = 0; b < branches; b++) {
+        let currentText = sourceText
+        let parentId = sourceCommit.id
+        const branchLane = maxLane + 1 + b
 
-      try {
-        predictions = await generateFuturePredictions(plainText, count)
-      } catch {
-        // Fallback to mock pool if API key missing or call fails
-        await delay(400)
-        predictions = []
-        for (let i = 0; i < count; i++) {
-          const poolItem = MOCK_POOL[poolIndex % MOCK_POOL.length]
-          poolIndex++
-          predictions.push({ label: poolItem.label, content: poolItem.text })
+        for (let d = 0; d < depth; d++) {
+          let prediction: { label: string; content: string }
+
+          try {
+            prediction = await generateSingleCompletion(
+              systemPrompt,
+              userPrompt,
+              currentText
+            )
+          } catch {
+            // Fallback to mock pool if API key missing or call fails
+            await delay(400)
+            const poolItem = MOCK_POOL[poolIndex % MOCK_POOL.length]
+            poolIndex++
+            prediction = { label: poolItem.label, content: poolItem.text }
+          }
+
+          const newId = `future-${Date.now()}-${b}-${d}`
+          const newCommit: Commit = {
+            id: newId,
+            label: prediction.label,
+            hash: Math.random().toString(16).slice(2, 8),
+            type: 'future',
+            parents: [parentId],
+            lane: branchLane,
+            column: baseColumn + 1 + d,
+            // AI returns the full evolved text — use it directly
+            content: '<p>' + prediction.content + '</p>',
+          }
+
+          this.commits.push(newCommit)
+
+          // Chain: next depth step uses this output as input
+          currentText = prediction.content
+
+          // Pause between calls to stay under Gemini free-tier RPM limit
+          await delay(3000)
+          parentId = newId
         }
-      }
-
-      for (let i = 0; i < predictions.length; i++) {
-        const pred = predictions[i]
-        this.commits.push({
-          id: `future-${Date.now()}-${i}`,
-          label: pred.label,
-          hash: Math.random().toString(16).slice(2, 8),
-          type: 'future',
-          parents: [activeCommit.id],
-          lane: maxLane + 1 + i,
-          column: newColumn,
-          content: activeCommit.content + '<p>' + pred.content + '</p>',
-        })
       }
 
       this.isGenerating = false
