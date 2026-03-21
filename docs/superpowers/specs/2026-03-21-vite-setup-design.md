@@ -17,6 +17,8 @@ HackStoga2026/
 │   │   │   └── global.css       ← resets + CSS custom properties
 │   │   ├── components/
 │   │   ├── views/
+│   │   ├── router/
+│   │   │   └── index.ts         ← Vue Router configuration
 │   │   ├── App.vue
 │   │   └── main.ts
 │   ├── index.html
@@ -27,6 +29,7 @@ HackStoga2026/
 │   ├── src/
 │   │   ├── routes/
 │   │   └── index.ts             ← Express app entry point
+│   ├── dist/                    ← tsc output (gitignored)
 │   ├── tsconfig.json
 │   └── package.json
 ├── package.json                 ← root, scripts only (no deps)
@@ -39,26 +42,32 @@ HackStoga2026/
 - **Framework:** Vue 3 (Composition API) + Vite + TypeScript (`vue-ts` template base)
 - **Styling:** CSS Modules via `<style module>` on all components; no CSS framework
 - **Global CSS:** `src/assets/global.css` for box-sizing reset, margin reset, and CSS custom properties (colors, spacing, typography)
-- **Routing:** Vue Router — page-level components live in `src/views/`
+- **Routing:** Vue Router — router config lives in `src/router/index.ts`, page-level components in `src/views/`. Vue Router is included from the start since the project is expected to have multiple views.
 - **Dev proxy:** `vite.config.ts` proxies `/api` → `http://localhost:3000` to avoid CORS during development
+- **TypeScript:** `strict: true` in `tsconfig.json`
 
 ## Backend
 
 - **Runtime:** Node.js + Express + TypeScript
+- **Key packages:** `express`, `cors`, `@types/express`, `@types/node`, `@types/cors`, `ts-node-dev` (dev), `typescript`
 - **Dev server:** `ts-node-dev` for hot reload during development (no manual compile step)
+- **Build:** `tsc -p backend/tsconfig.json` (run from repo root) outputs to `backend/dist/`
 - **Entry:** `src/index.ts` — initializes Express, applies middleware, mounts routes, listens on port `3000`
 - **Routes:** `src/routes/` directory for organizing route modules
-- **CORS:** Enabled for `http://localhost:5173` (Vite dev server) in development
+- **CORS:** Enabled for `http://localhost:5173` (Vite dev server) in development. Production CORS config is out of scope for this setup.
+- **TypeScript:** `strict: true` in `tsconfig.json`
 
 ## Root Package
 
-The root `package.json` contains only `devDependencies` (e.g., `concurrently`) and scripts:
+The root `package.json` contains only `devDependencies` (`concurrently`) and scripts:
 
-- `npm run dev` — starts frontend and backend concurrently
-- `npm run build` — builds frontend (Vite) and compiles backend TypeScript
+- `npm run dev` — runs `concurrently "npm run dev --prefix frontend" "npm run dev --prefix backend"`
+- `npm run build` — runs `npm run build --prefix frontend && tsc -p backend/tsconfig.json`
 
 ## Decisions
 
 - No monorepo tooling (no workspaces, no Turborepo) — YAGNI for a hackathon
 - No shared `types/` package — can be added later if needed
 - CSS Modules chosen over Tailwind/Material for full design control with minimal setup
+- Vue Router included from the start — the project is expected to have multiple views
+- Production CORS configuration is explicitly out of scope for this initial setup
