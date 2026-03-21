@@ -1,32 +1,80 @@
 <script setup lang="ts">
+import { useProjectStore } from '../stores/useProjectStore';
+import Taskbar from '../components/Taskbar.vue';
+import Panel from '../components/Panel.vue';
+import MainEditor from '../components/MainEditor.vue';
+import GitGraph from '../components/GitGraph.vue';
+import GenerateBar from '../components/GenerateBar.vue';
+import BranchViewer from '../components/BranchViewer.vue';
+
+const store = useProjectStore();
 </script>
 
 <template>
-  <main :class="$style.home">
-    <h1 :class="$style.title">HackStoga 2026</h1>
-    <p :class="$style.subtitle">Let's build something.</p>
-  </main>
+  <div :class="$style.workspace">
+    <Taskbar />
+    <div :class="$style.canvas">
+
+      <!-- MAIN editor panel -->
+      <Panel title="MAIN" accent="commit" :x="20" :y="20" :width="260" :height="580">
+        <template #badge><span class="hash">doc</span></template>
+        <MainEditor />
+      </Panel>
+
+      <!-- Git graph panel -->
+      <Panel title="GIT NODES" accent="branch" :x="300" :y="20" :width="720" :height="220">
+        <template #badge><span class="badge badge--branch">LIVE</span></template>
+        <GitGraph />
+        <template #footer>
+          <GenerateBar />
+        </template>
+      </Panel>
+
+      <!-- Branch viewer: shown when a future node is selected -->
+      <Panel
+        v-if="store.previewCommitId"
+        title="BRANCH ◈ VIEWER"
+        accent="branch"
+        :x="300"
+        :y="280"
+        :width="460"
+        :height="320"
+      >
+        <template #badge>
+          <button :class="$style.closeBtn" @click="store.clearPreview()">×</button>
+        </template>
+        <BranchViewer />
+      </Panel>
+
+    </div>
+  </div>
 </template>
 
 <style module>
-.home {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: var(--spacing-md);
+.workspace {
+  min-height: 100dvh;
+  background: var(--color-bg);
 }
 
-.title {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--color-primary);
+.canvas {
+  position: relative;
+  height: calc(100dvh - 48px);
+  margin-top: 48px;
+  overflow: hidden;
 }
 
-.subtitle {
-  font-size: 1.25rem;
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+  cursor: pointer;
+  padding: 0 var(--space-1);
+  line-height: 1;
+  transition: color var(--duration-fast);
+}
+
+.closeBtn:hover {
   color: var(--color-text);
-  opacity: 0.7;
 }
 </style>
