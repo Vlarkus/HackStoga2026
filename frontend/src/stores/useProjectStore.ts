@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
-import { generateFuturePredictions } from '../ai'
+import { generateSingleCompletion, DEFAULT_SYSTEM_PROMPT } from '../ai'
 
 export type CommitType = 'commit' | 'current' | 'future'
+
+export interface GenerateOptions {
+  branches: number
+  depth: number
+  systemPrompt: string
+  userPrompt: string
+}
 
 export interface Commit {
   id: string
@@ -125,8 +132,8 @@ export const useProjectStore = defineStore('project', {
       const activeCommit = this.commits.find(c => c.id === this.activeCommitId)!
       const newColumn = activeCommit.column + 1
 
-      // Strip HTML tags to get plain text for the prompt
-      const plainText = activeCommit.content.replace(/<[^>]*>/g, ' ').trim()
+      // Strip HTML tags to get plain text for the AI
+      const sourceText = sourceCommit.content.replace(/<[^>]*>/g, ' ').trim()
 
       let predictions: Array<{ label: string; content: string }>
 
