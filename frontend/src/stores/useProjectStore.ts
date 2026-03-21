@@ -119,9 +119,10 @@ export const useProjectStore = defineStore('project', {
       this.isGenerating = true
       await delay(400)
 
-      const currentCommit = this.commits.find(c => c.id === this.activeCommitId)!
+      const activeCommit = this.commits.find(c => c.id === this.activeCommitId)!
       const maxLane = Math.max(...this.commits.map(c => c.lane))
-      const newColumn = currentCommit.column + 1
+      const maxColumn = Math.max(...this.commits.map(c => c.column))
+      const newColumn = maxColumn + 1
 
       for (let i = 0; i < count; i++) {
         const poolItem = MOCK_POOL[poolIndex % MOCK_POOL.length]
@@ -132,10 +133,10 @@ export const useProjectStore = defineStore('project', {
           label: poolItem.label,
           hash: Math.random().toString(16).slice(2, 8),
           type: 'future',
-          parents: [currentCommit.id],
+          parents: [activeCommit.id],
           lane: maxLane + 1 + i,
           column: newColumn,
-          content: currentCommit.content + '<p>' + poolItem.text + '</p>',
+          content: activeCommit.content + '<p>' + poolItem.text + '</p>',
         })
       }
 

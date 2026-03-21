@@ -10,6 +10,7 @@ const store = useProjectStore()
 const displayNodes = computed((): Commit[] => {
   if (!store.isGenerating) return store.graphNodes
   const activeCommit = store.graphNodes.find(n => n.id === store.activeCommitId)!
+  const maxColumn = Math.max(...store.graphNodes.map(n => n.column))
   const placeholder: Commit = {
     id: '__generating__',
     label: '…',
@@ -17,7 +18,7 @@ const displayNodes = computed((): Commit[] => {
     type: 'future',
     parents: [activeCommit.id],
     lane: Math.max(...store.graphNodes.map(n => n.lane)) + 1,
-    column: activeCommit.column + 1,
+    column: maxColumn + 1,
     content: '',
   }
   return [...store.graphNodes, placeholder]
