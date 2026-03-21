@@ -1,29 +1,36 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { computeGraphLayout } from '../composables/useGraphLayout'
-import type { GraphNode } from '../composables/useGraphLayout'
+import { useProjectStore } from '../stores/useProjectStore'
+import type { Commit } from '../stores/useProjectStore'
 
-const MOCK_NODES: GraphNode[] = [
-  { id: 'a', label: 'initial commit',  hash: 'a1b2c3', type: 'commit',  parents: [],    lane: 0, column: 0 },
-  { id: 'b', label: 'add router',      hash: 'b4d5e6', type: 'commit',  parents: ['a'], lane: 0, column: 1 },
-  { id: 'c', label: 'global css',      hash: 'c7f8a9', type: 'current', parents: ['b'], lane: 0, column: 2 },
-  { id: 'd', label: 'add graph view',  hash: 'd0e1f2', type: 'future',  parents: ['c'], lane: 0, column: 3 },
-  { id: 'e', label: 'dark mode',       hash: 'e3f4a5', type: 'future',  parents: ['c'], lane: 1, column: 3 },
-  { id: 'f', label: 'animations',      hash: 'f6b7c8', type: 'future',  parents: ['d'], lane: 0, column: 4 },
-]
+const store = useProjectStore()
 
-const layout = computed(() => computeGraphLayout(MOCK_NODES))
+// Placeholder node shown while generating — pulsing dot at next column
+const displayNodes = computed((): Commit[] => {
+  if (!store.isGenerating) return store.graphNodes
+  const maxColumn = Math.max(...store.graphNodes.map(n => n.column))
+  const current = store.graphNodes.find(n => n.type === 'current')!
+  const placeholder: Commit = {
+    id: '__generating__',
+    label: '…',
+    hash: '……',
+    type: 'future',
+    parents: [current.id],
+    lane: Math.max(...store.graphNodes.map(n => n.lane)) + 1,
+    column: maxColumn + 1,
+    content: '',
+  }
+  return [...store.graphNodes, placeholder]
+})
 
-// Build edge list: for each node, one edge per parent
+const layout = computed(() => computeGraphLayout(displayNodes.value))
+
 const edges = computed(() => {
   const { positions } = layout.value
-  const result: Array<{
-    id: string
-    d: string
-    type: 'commit' | 'current' | 'future'
-  }> = []
+  const result: Array<{ id: string; d: string; type: Commit['type'] }> = []
 
-  for (const node of MOCK_NODES) {
+  for (const node of displayNodes.value) {
     const to = positions.get(node.id)
     if (!to) continue
     for (const parentId of node.parents) {
@@ -40,13 +47,21 @@ const edges = computed(() => {
   return result
 })
 
-// Hash chip: estimate width = chars * 5.5 + 8px padding
 function hashChipRect(hash: string) {
   const w = hash.length * 5.5 + 8
   return { w, h: 13, dx: -w / 2 }
 }
 
 const NODE_R: Record<string, number> = { commit: 8, current: 10, future: 8 }
+
+function handleNodeClick(node: Commit) {
+  if (node.id === '__generating__') return
+  if (node.type === 'future') {
+    store.setPreview(node.id)
+  } else {
+    store.setActive(node.id)
+  }
+}
 </script>
 
 <template>
@@ -73,12 +88,15 @@ const NODE_R: Record<string, number> = { commit: 8, current: 10, future: 8 }
 
     <!-- Nodes -->
     <g
-      v-for="node in MOCK_NODES"
+      v-for="node in displayNodes"
       :key="node.id"
       :style="node.type === 'current' ? 'filter: drop-shadow(0 0 6px var(--clr-mustard))' : ''"
       :opacity="node.type === 'future' ? 0.5 : 1"
+      :class="{ 'generating-pulse': node.id === '__generating__' }"
+      style="cursor: pointer"
+      @click="handleNodeClick(node)"
     >
-      <!-- Outer ring for current node -->
+      <!-- Outer ring: current node (mustard) -->
       <circle
         v-if="node.type === 'current'"
         :cx="layout.positions.get(node.id)!.x"
@@ -90,6 +108,18 @@ const NODE_R: Record<string, number> = { commit: 8, current: 10, future: 8 }
         stroke-width="1.5"
       />
 
+      <!-- Outer ring: previewed future node (aqua) -->
+      <circle
+        v-if="node.id === store.previewCommitId"
+        :cx="layout.positions.get(node.id)!.x"
+        :cy="layout.positions.get(node.id)!.y"
+        r="14"
+        fill="none"
+        stroke="var(--color-branch)"
+        stroke-opacity="0.6"
+        stroke-width="1.5"
+      />
+
       <!-- Main circle -->
       <circle
         :cx="layout.positions.get(node.id)!.x"
@@ -98,8 +128,9 @@ const NODE_R: Record<string, number> = { commit: 8, current: 10, future: 8 }
         :fill="node.type === 'future' ? 'var(--color-branch)' : 'var(--color-commit)'"
       />
 
-      <!-- Hash chip: rect background -->
+      <!-- Hash chip: background -->
       <rect
+        v-if="node.id !== '__generating__'"
         :x="layout.positions.get(node.id)!.x + hashChipRect(node.hash).dx"
         :y="layout.positions.get(node.id)!.y - 23"
         :width="hashChipRect(node.hash).w"
@@ -110,6 +141,7 @@ const NODE_R: Record<string, number> = { commit: 8, current: 10, future: 8 }
 
       <!-- Hash chip: text -->
       <text
+        v-if="node.id !== '__generating__'"
         :x="layout.positions.get(node.id)!.x"
         :y="layout.positions.get(node.id)!.y - 13"
         text-anchor="middle"
@@ -131,3 +163,14 @@ const NODE_R: Record<string, number> = { commit: 8, current: 10, future: 8 }
     </g>
   </svg>
 </template>
+
+<style>
+@keyframes generating-pulse {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.6; }
+}
+
+.generating-pulse {
+  animation: generating-pulse 600ms ease-in-out infinite;
+}
+</style>
