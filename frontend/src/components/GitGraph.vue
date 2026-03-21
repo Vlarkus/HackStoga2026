@@ -90,7 +90,7 @@ function handleNodeClick(node: Commit) {
     <g
       v-for="node in displayNodes"
       :key="node.id"
-      :style="node.type === 'current' ? 'filter: drop-shadow(0 0 6px var(--clr-mustard))' : ''"
+      :style="node.type === 'current' ? 'filter: drop-shadow(0 0 6px var(--clr-green))' : ''"
       :opacity="node.type === 'future' ? 0.5 : 1"
       :class="{ 'generating-pulse': node.id === '__generating__' }"
       style="cursor: pointer"
@@ -149,7 +149,7 @@ function handleNodeClick(node: Commit) {
         :width="hashChipRect(node.hash).w"
         :height="hashChipRect(node.hash).h"
         rx="3"
-        :fill="node.type === 'future' ? 'rgba(157,217,210,0.12)' : 'rgba(254,215,102,0.1)'"
+        :fill="node.type === 'future' ? 'rgba(168,230,176,0.12)' : 'rgba(126,203,139,0.1)'"
       />
 
       <!-- Hash chip: text -->
@@ -160,7 +160,7 @@ function handleNodeClick(node: Commit) {
         text-anchor="middle"
         font-family="Space Mono, monospace"
         font-size="9"
-        :fill="node.type === 'future' ? 'var(--color-branch)' : 'var(--clr-mustard)'"
+        :fill="node.type === 'future' ? 'var(--color-branch)' : 'var(--clr-green)'"
         letter-spacing="0.05em"
       >{{ node.hash }}</text>
 
