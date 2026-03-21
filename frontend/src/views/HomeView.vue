@@ -1,8 +1,13 @@
 <script setup lang="ts">
+import { useProjectStore } from '../stores/useProjectStore';
 import Taskbar from '../components/Taskbar.vue';
 import Panel from '../components/Panel.vue';
 import MainEditor from '../components/MainEditor.vue';
 import GitGraph from '../components/GitGraph.vue';
+import GenerateBar from '../components/GenerateBar.vue';
+import BranchViewer from '../components/BranchViewer.vue';
+
+const store = useProjectStore();
 </script>
 
 <template>
@@ -10,14 +15,37 @@ import GitGraph from '../components/GitGraph.vue';
     <Taskbar />
     <div :class="$style.canvas">
 
+      <!-- MAIN editor panel -->
       <Panel title="MAIN" accent="commit" :x="20" :y="20" :width="260" :height="580">
         <template #badge><span class="hash">doc</span></template>
         <MainEditor />
       </Panel>
 
+      <!-- Git graph panel -->
       <Panel title="GIT NODES" accent="branch" :x="300" :y="20" :width="720" :height="220">
         <template #badge><span class="badge badge--branch">LIVE</span></template>
         <GitGraph />
+      </Panel>
+
+      <!-- Generate bar: docked flush below GIT NODES -->
+      <div :class="$style.generateBarWrap">
+        <GenerateBar />
+      </div>
+
+      <!-- Branch viewer: shown when a future node is selected -->
+      <Panel
+        v-if="store.previewCommitId"
+        title="BRANCH ◈ VIEWER"
+        accent="branch"
+        :x="300"
+        :y="280"
+        :width="460"
+        :height="320"
+      >
+        <template #badge>
+          <button :class="$style.closeBtn" @click="store.clearPreview()">×</button>
+        </template>
+        <BranchViewer />
       </Panel>
 
     </div>
@@ -35,5 +63,28 @@ import GitGraph from '../components/GitGraph.vue';
   height: calc(100dvh - 48px);
   margin-top: 48px;
   overflow: hidden;
+}
+
+/* Positioned flush below GIT NODES panel (y:20 + h:220 + 5px border gap = 245) */
+.generateBarWrap {
+  position: absolute;
+  left: 300px;
+  top: 245px;
+  width: 720px;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+  cursor: pointer;
+  padding: 0 var(--space-1);
+  line-height: 1;
+  transition: color var(--duration-fast);
+}
+
+.closeBtn:hover {
+  color: var(--color-text);
 }
 </style>
