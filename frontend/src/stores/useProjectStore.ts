@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { generateSingleCompletion, DEFAULT_SYSTEM_PROMPT } from '../ai'
+import { generateFuturePredictions, DEFAULT_SYSTEM_PROMPT } from '../ai'
 
 export type CommitType = 'commit' | 'current' | 'future'
 
@@ -133,12 +133,12 @@ export const useProjectStore = defineStore('project', {
       const newColumn = activeCommit.column + 1
 
       // Strip HTML tags to get plain text for the AI
-      const sourceText = sourceCommit.content.replace(/<[^>]*>/g, ' ').trim()
+      const sourceText = activeCommit.content.replace(/<[^>]*>/g, ' ').trim()
 
       let predictions: Array<{ label: string; content: string }>
 
       try {
-        predictions = await generateFuturePredictions(plainText, count, userPrompt)
+        predictions = await generateFuturePredictions(sourceText, count, userPrompt)
       } catch {
         // Fallback to mock pool — userPrompt is ignored in fallback path
         await delay(400)
