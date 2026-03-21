@@ -1,38 +1,60 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useProjectStore } from '../stores/useProjectStore'
+import { DEFAULT_SYSTEM_PROMPT } from '../ai'
 
 const store = useProjectStore()
-const count = ref(3)
+const branches = ref(3)
+const depth = ref(2)
+const userPrompt = ref('')
 
-function decrement() {
-  if (count.value > 1) count.value--
-}
-function increment() {
-  if (count.value < 4) count.value++
+function decBranches() { if (branches.value > 1) branches.value-- }
+function incBranches() { if (branches.value < 4) branches.value++ }
+function decDepth() { if (depth.value > 1) depth.value-- }
+function incDepth() { if (depth.value < 5) depth.value++ }
+
+function generate() {
+  store.generateFutures({
+    branches: branches.value,
+    depth: depth.value,
+    systemPrompt: DEFAULT_SYSTEM_PROMPT,
+    userPrompt: userPrompt.value || 'Continue the text in an interesting direction',
+  })
 }
 </script>
 
 <template>
   <div :class="$style.bar">
+    <!-- User prompt -->
+    <textarea
+      :class="$style.promptInput"
+      v-model="userPrompt"
+      placeholder="Direction for AI generation..."
+      :disabled="store.isGenerating"
+      rows="1"
+    />
+
+    <!-- Branch counter -->
+    <label :class="$style.label">Branches</label>
     <div :class="$style.counter">
-      <button
-        :class="$style.counterBtn"
-        :disabled="count <= 1 || store.isGenerating"
-        @click="decrement"
-      >−</button>
-      <span :class="$style.countDisplay">{{ count }}</span>
-      <button
-        :class="$style.counterBtn"
-        :disabled="count >= 4 || store.isGenerating"
-        @click="increment"
-      >+</button>
+      <button :class="$style.counterBtn" :disabled="branches <= 1 || store.isGenerating" @click="decBranches">−</button>
+      <span :class="$style.countDisplay">{{ branches }}</span>
+      <button :class="$style.counterBtn" :disabled="branches >= 4 || store.isGenerating" @click="incBranches">+</button>
     </div>
 
+    <!-- Depth counter -->
+    <label :class="$style.label">Depth</label>
+    <div :class="$style.counter">
+      <button :class="$style.counterBtn" :disabled="depth <= 1 || store.isGenerating" @click="decDepth">−</button>
+      <span :class="$style.countDisplay">{{ depth }}</span>
+      <button :class="$style.counterBtn" :disabled="depth >= 5 || store.isGenerating" @click="incDepth">+</button>
+    </div>
+
+    <!-- Generate button -->
     <button
       :class="[$style.generateBtn, { [$style.generating]: store.isGenerating }]"
       :disabled="store.isGenerating"
-      @click="store.generateFutures(count)"
+      @click="generate"
     >
       <span :class="{ [$style.spin]: store.isGenerating }">◈</span>
       {{ store.isGenerating ? 'GENERATING…' : 'GENERATE' }}
@@ -49,6 +71,36 @@ function increment() {
   padding: 0 var(--space-4);
   background: var(--color-bg-float);
   font-family: var(--font-mono);
+}
+
+.label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.promptInput {
+  flex: 1;
+  min-width: 120px;
+  max-width: 300px;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  resize: none;
+  outline: none;
+  transition: border-color var(--duration-fast);
+}
+
+.promptInput:focus {
+  border-color: var(--color-branch);
+}
+
+.promptInput:disabled {
+  opacity: 0.5;
 }
 
 .counter {
