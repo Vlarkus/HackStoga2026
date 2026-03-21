@@ -1,4 +1,4 @@
-import git from 'isomorphic-git'
+import * as git from 'isomorphic-git'
 import { fs, getRepoDir } from '../config'
 import type { CommitGraph, GraphNode, BranchInfo } from '../types'
 

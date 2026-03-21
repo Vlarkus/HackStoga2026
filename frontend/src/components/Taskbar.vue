@@ -122,7 +122,7 @@ const store = useProjectStore()
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--color-commit);
-  background: rgba(126, 203, 139, 0.08);
+  background: rgba(var(--clr-mustard-rgb), 0.08);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
   letter-spacing: 0.05em;

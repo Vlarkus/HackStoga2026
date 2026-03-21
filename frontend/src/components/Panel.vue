@@ -88,9 +88,21 @@ onUnmounted(() => {
     class="panel-root"
     :style="{ left: `${x}px`, top: `${y}px`, width: `${width}px`, height: `${height}px` }"
   >
-    <div class="drag-handle panel-header">
-      <span class="panel-title">{{ title }}</span>
-      <slot name="badge" />
+    <div class="panel-header">
+      <slot name="title"><span class="panel-title">{{ title }}</span></slot>
+      <div class="panel-header-actions">
+        <slot name="badge" />
+        <button class="drag-handle drag-grip" title="Hold to drag" aria-label="Drag panel">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+            <circle cx="3" cy="3" r="1.2"/>
+            <circle cx="9" cy="3" r="1.2"/>
+            <circle cx="3" cy="6" r="1.2"/>
+            <circle cx="9" cy="6" r="1.2"/>
+            <circle cx="3" cy="9" r="1.2"/>
+            <circle cx="9" cy="9" r="1.2"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <div class="panel-body">
       <slot />
@@ -136,11 +148,42 @@ onUnmounted(() => {
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg-float);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  cursor: grab;
   flex-shrink: 0;
 }
 
-.panel-header:active { cursor: grabbing; }
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.drag-grip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 4px);
+  color: var(--color-text-muted);
+  cursor: grab;
+  opacity: 0.4;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.drag-grip:hover {
+  opacity: 1;
+  border-color: var(--color-border);
+  background: var(--color-bg-raised);
+}
+
+.drag-grip:active {
+  cursor: grabbing;
+  opacity: 1;
+}
 
 .panel-title {
   font-family: var(--font-mono);

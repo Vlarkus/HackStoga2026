@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { generateFuturePredictions } from '../ai'
+import { generateFuturePredictions, DEFAULT_SYSTEM_PROMPT } from '../ai'
 import {
   BUSINESS_CONCEPT,
   HIRING_STRATEGY,
@@ -13,6 +13,13 @@ import {
 } from './demoContent'
 
 export type CommitType = 'commit' | 'current' | 'future'
+
+export interface GenerateOptions {
+  branches: number
+  depth: number
+  systemPrompt: string
+  userPrompt: string
+}
 
 export interface Commit {
   id: string
@@ -164,20 +171,21 @@ export const useProjectStore = defineStore('project', {
     async generateFutures(count: number, userPrompt?: string) {
       this.isGenerating = true
 
-      const activeCommit = this.commits.find(c => c.id === this.activeCommitId)!
-      const maxLane = Math.max(...this.commits.map(c => c.lane))
-      const maxColumn = Math.max(...this.commits.map(c => c.column))
-      const newColumn = maxColumn + 1
+      // Clear any existing futures before generating new ones
+      this.commits = this.commits.filter(c => c.type !== 'future')
 
-      // Strip HTML tags to get plain text for the prompt
-      const plainText = activeCommit.content.replace(/<[^>]*>/g, ' ').trim()
+      const activeCommit = this.commits.find(c => c.id === this.activeCommitId)!
+      const newColumn = activeCommit.column + 1
+
+      // Strip HTML tags to get plain text for the AI
+      const sourceText = activeCommit.content.replace(/<[^>]*>/g, ' ').trim()
 
       let predictions: Array<{ label: string; content: string }>
 
       try {
-        predictions = await generateFuturePredictions(plainText, count, userPrompt)
+        predictions = await generateFuturePredictions(sourceText, count, userPrompt)
       } catch {
-        // Fallback to mock pool if API key missing or call fails
+        // Fallback to mock pool — userPrompt is ignored in fallback path
         await delay(400)
         predictions = []
         for (let i = 0; i < count; i++) {
@@ -195,7 +203,7 @@ export const useProjectStore = defineStore('project', {
           hash: Math.random().toString(16).slice(2, 8),
           type: 'future',
           parents: [activeCommit.id],
-          lane: maxLane + 1 + i,
+          lane: activeCommit.lane + 1 + i,
           column: newColumn,
           content: activeCommit.content + '<p>' + pred.content + '</p>',
         })

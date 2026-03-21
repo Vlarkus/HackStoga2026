@@ -10,11 +10,6 @@ export interface SingleCompletion {
   content: string
 }
 
-export interface FuturePrediction {
-  label: string
-  content: string
-}
-
 export const DEFAULT_SYSTEM_PROMPT = `You are a text evolution assistant for a version-control app called "Future-Commit".
 Your job is to evolve text in interesting directions. Given the current text and a user direction, produce the next version of the text.
 The output should be a natural continuation or evolution — not a summary, not commentary.
@@ -152,6 +147,8 @@ Respond ONLY with a JSON object, no markdown fences, no extra text:
 
   throw new Error('Gemini: max retries exceeded')
 }
+
+export type FuturePrediction = SingleCompletion
 
 /**
  * Generate future predictions — creative continuations of the text.

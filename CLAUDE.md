@@ -1,23 +1,81 @@
 # Project: "Future-Commit" AI Version Control System (Demo MVP)
 
 ## Overview
-A novel version control system built for creative prototyping and text generation. Instead of just tracking past changes, it predicts and generates "future commits." It allows users to visually explore AI-generated branches, adjust directions via prompts, and merge/blend different branches to create a final document. 
+A novel version control system built for creative prototyping and text generation. Instead of just tracking past changes, it predicts and generates "future commits." Users visually explore AI-generated branches, adjust directions via prompts, and merge/blend different branches to create a final document.
 
 ## Core Demo Features
-* **Future Branching:** AI generates multiple upcoming commits/branches based on deterministic models or user prompts.
-* **Branch Blending (Cherry-Picking):** UI to merge or blend aspects from different AI-generated branches into the main working path.
-* **Granular Prediction:** Ranges from high-level full-branch generation down to localized inline text completions within a single commit.
-* **Partial Locking:** Ability to highlight and lock specific sections of text from being altered by AI generations.
-* **Modular UI:** Container-based split views, specifically needing:
-  * A central text editor view.
-  * A visualizer displaying the commit tree (past, current, and suggested future commits).
-* **Advanced Visualizations:** Support for rendering selected content (e.g., graphs, 3D models, or LaTeX math representations).
-* **Modular "Skills":** Downloadable presets/plugins tailored for specific tasks (e.g., diagramming, creative writing, cold outreach).
+* **Future Branching:** AI (Gemini 2.0 Flash) generates multiple upcoming commits/branches from the current text.
+* **Branch Blending:** UI to adopt, merge, or discard AI-generated future branches into the main working path.
+* **Modular UI:** Panel-based layout with:
+  * A central rich text editor (TipTap).
+  * An SVG commit graph visualizer showing past, current, and future commits.
+  * A branch viewer for previewing future commit content.
+  * A generate bar to trigger AI predictions.
+* **In-Browser Git:** Full git operations (branch, commit, merge, diff) running client-side via isomorphic-git + lightning-fs (IndexedDB). Single document per project, with export/import support.
 
-## Technical Architecture Context
-* **Core Stack:** React and Vite, structured as a local Monorepo.
-* **Backend (The "Git Manager"):** A local backend that exposes a simple API. It needs to handle programmatic Git operations (branching, merging, committing) so that both the frontend UI and the separate AI prediction backend can easily manipulate the repository. 
-* **Frontend:** Needs to support diffing, split panes, and interactive graph visualizations seamlessly within the React/Vite ecosystem.
+## Technical Architecture
 
-## Current Objective
-Please recommend the best open-source libraries (e.g., React components, Node.js Git wrappers like `isomorphic-git`, editor engines like Monaco, and graph visualizers) to quickly prototype this frontend and backend. I need to know what to download, how to optimally structure the Vite monorepo for this, and how to wire up the core branching/merging API.
+### Monorepo Structure
+```
+HackStoga2026/
+├── package.json              Root: concurrently runs frontend + backend
+├── CLAUDE.md                 This file
+├── frontend/                 Vue 3 + Vite + TypeScript
+│   ├── src/
+│   │   ├── ai.ts             Gemini API integration (reads VITE_GEMINI_API_KEY from .env)
+│   │   ├── git/              In-browser git module (isomorphic-git + lightning-fs)
+│   │   │   ├── config.ts     LightningFS instance, repo dir helpers
+│   │   │   ├── types.ts      Shared interfaces
+│   │   │   ├── index.ts      Barrel export
+│   │   │   └── services/     repo, branch, commit, file, diff, merge, tree
+│   │   ├── stores/
+│   │   │   └── useProjectStore.ts   Pinia store: commits, branches, AI generation
+│   │   ├── components/
+│   │   │   ├── Taskbar.vue          Top bar with project status
+│   │   │   ├── Panel.vue            Draggable panel container
+│   │   │   ├── MainEditor.vue       TipTap rich text editor
+│   │   │   ├── GitGraph.vue         SVG commit graph (main UI)
+│   │   │   ├── CommitGraphViz.vue   SVG commit graph (playground)
+│   │   │   ├── DiffView.vue         Line-level diff viewer
+│   │   │   ├── GenerateBar.vue      AI future generation controls
+│   │   │   └── BranchViewer.vue     Preview content of selected branch
+│   │   ├── composables/
+│   │   │   ├── useEditorPersistence.ts
+│   │   │   └── useGraphLayout.ts
+│   │   ├── views/
+│   │   │   ├── HomeView.vue         Main app workspace
+│   │   │   └── GitPlayground.vue    Testing sandbox for git module (/git)
+│   │   ├── router/index.ts
+│   │   └── main.ts           Buffer polyfill + Pinia + Router
+│   └── .env                  VITE_GEMINI_API_KEY (not committed)
+└── backend/                  Express + TypeScript
+    └── src/
+        ├── index.ts           Express server on port 3000, CORS for :5173
+        └── routes/health.ts   GET /api/health
+```
+
+### Stack
+* **Frontend:** Vue 3, Vite 5, TypeScript, Pinia, Vue Router, TipTap, CSS Modules
+* **In-Browser Git:** isomorphic-git + @isomorphic-git/lightning-fs (IndexedDB)
+* **AI:** Google Gemini 2.0 Flash via @google/generative-ai
+* **Backend:** Express 4, TypeScript, ts-node-dev (currently health endpoint only)
+* **Dev Tooling:** concurrently, vue-tsc
+
+### Key Design Decisions
+* **Git runs client-side** — no server-side git. All operations happen in the browser using IndexedDB for persistence.
+* **Single document per project** — each project versions one `document.txt` file.
+* **AI calls from frontend** — Gemini API key stored in `frontend/.env` as `VITE_GEMINI_API_KEY`. Falls back to mock data if key is missing.
+* **CSS Modules + global design tokens** — dark evergreen theme with mustard/aqua accents defined in `global.css`.
+* **No shared types package** — frontend and backend are independent TypeScript projects.
+
+## Running the Project
+```bash
+npm run dev          # Starts both frontend (:5173) and backend (:3000)
+```
+
+Frontend proxies `/api/*` to backend via Vite config.
+
+## Environment Variables
+| Variable | Location | Purpose |
+|---|---|---|
+| `VITE_GEMINI_API_KEY` | `frontend/.env` | Google Gemini API key for AI generation |
