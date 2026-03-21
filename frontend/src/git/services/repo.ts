@@ -8,7 +8,12 @@ export async function initRepo(
   defaultBranch = 'main'
 ): Promise<void> {
   const dir = getRepoDir(name)
-  await fs.promises.mkdir(dir)
+  try {
+    await fs.promises.mkdir(dir)
+  } catch (e: any) {
+    if (e.code === 'EEXIST') throw new Error(`Repo "${name}" already exists`)
+    throw e
+  }
   await git.init({ fs, dir, defaultBranch })
 
   // Create the initial document and first commit

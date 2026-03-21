@@ -1,3 +1,6 @@
+import { Buffer } from 'buffer'
+;(globalThis as any).Buffer = Buffer
+
 import { createApp } from 'vue';
 import './assets/global.css';
 import App from './App.vue';
