@@ -1,4 +1,4 @@
-import git from 'isomorphic-git'
+import * as git from 'isomorphic-git'
 import { fs, getRepoDir, DOCUMENT_FILE } from '../config'
 import type { FileDiff } from '../types'
 

@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { useProjectStore } from '../stores/useProjectStore'
+import { ArrowUp } from 'lucide-vue-next'
 
 const store = useProjectStore()
 const branches = ref(3)
 const prompt = ref('')
+const isFocused = ref(false)
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
 function decrement() {
   if (branches.value > 1) branches.value--
@@ -18,126 +21,136 @@ function generate() {
   store.generateFutures(branches.value, trimmed || undefined)
 }
 
-// Clear steering prompt when the active commit changes (covers adoptPreview + setActive)
+function autoResize() {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px'
+}
+
+watch(prompt, () => nextTick(autoResize))
+
 watch(() => store.activeCommitId, () => {
   prompt.value = ''
 })
 </script>
 
 <template>
-  <div :class="$style.bar">
-    <div :class="$style.inputWrapper">
-      <label :class="$style.floatingLabel">DIRECTION</label>
-      <input
+  <div :class="$style.wrap">
+    <div :class="[$style.box, isFocused && $style.boxFocused, store.isGenerating && $style.boxLoading]">
+      <textarea
+        ref="textareaRef"
         v-model="prompt"
-        :class="$style.promptInput"
-        :disabled="store.isGenerating"
+        :class="$style.textarea"
         placeholder="steer the future…"
+        :disabled="store.isGenerating"
         spellcheck="false"
         autocomplete="off"
+        rows="1"
+        @focus="isFocused = true"
+        @blur="isFocused = false"
+        @keydown.enter.exact.prevent="generate"
+        @input="autoResize"
       />
-      <div :class="$style.chip">
-        <span :class="$style.chipLabel">branches: {{ branches }}</span>
+
+      <div :class="$style.actions">
+        <div :class="$style.branchChip">
+          <span :class="$style.branchLabel">branches: {{ branches }}</span>
+          <button
+            :class="$style.chipBtn"
+            :disabled="branches <= 1 || store.isGenerating"
+            tabindex="-1"
+            @click="decrement"
+          >−</button>
+          <button
+            :class="$style.chipBtn"
+            :disabled="branches >= 4 || store.isGenerating"
+            tabindex="-1"
+            @click="increment"
+          >+</button>
+        </div>
+
         <button
-          :class="$style.chipBtn"
-          :disabled="branches <= 1 || store.isGenerating"
-          tabindex="-1"
-          @click="decrement"
-        >−</button>
-        <button
-          :class="$style.chipBtn"
-          :disabled="branches >= 4 || store.isGenerating"
-          tabindex="-1"
-          @click="increment"
-        >+</button>
+          :class="[$style.generateBtn, store.isGenerating && $style.generating]"
+          :disabled="store.isGenerating"
+          @click="generate"
+        >
+          <span :class="{ [$style.spin]: store.isGenerating }">◈</span>
+          {{ store.isGenerating ? 'GENERATING…' : 'GENERATE' }}
+        </button>
       </div>
     </div>
-
-    <button
-      :class="[$style.generateBtn, { [$style.generating]: store.isGenerating }]"
-      :disabled="store.isGenerating"
-      @click="generate"
-    >
-      <span :class="{ [$style.spin]: store.isGenerating }">◈</span>
-      {{ store.isGenerating ? 'GENERATING…' : 'GENERATE' }}
-    </button>
   </div>
 </template>
 
 <style module>
-.bar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  height: 36px;
-  padding: 0 var(--space-4);
+.wrap {
+  padding: var(--space-3) var(--space-4);
   background: var(--color-bg-float);
-  font-family: var(--font-mono);
+  border-top: 1px solid var(--color-border);
 }
 
-/* Floating-label input wrapper */
-.inputWrapper {
-  position: relative;
-  flex: 1;
-  height: 28px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+.box {
+  border: 1px solid var(--color-border-mid);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-raised);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-3);
   display: flex;
-  align-items: center;
-  transition: border-color var(--duration-fast);
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 
-.inputWrapper:focus-within {
+.boxFocused {
   border-color: var(--color-branch);
+  box-shadow: var(--glow-branch);
 }
 
-.floatingLabel {
-  position: absolute;
-  top: 3px;
-  left: 6px;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--color-text-muted);
-  pointer-events: none;
-  line-height: 1;
-  opacity: 0.6;
+.boxLoading {
+  opacity: 0.7;
 }
 
-.promptInput {
+.textarea {
   width: 100%;
-  height: 100%;
+  min-height: 36px;
+  max-height: 200px;
   background: transparent;
   border: none;
   outline: none;
+  resize: none;
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   color: var(--color-text);
-  padding: 14px 120px 2px 6px; /* top pad pushes value below label; right pad clears chip */
+  line-height: 1.5;
+  padding: 0;
   caret-color: var(--color-branch);
+  overflow-y: auto;
 }
 
-.promptInput::placeholder {
+.textarea::placeholder {
   color: var(--color-text-muted);
-  opacity: 0.4;
+  opacity: 0.55;
 }
 
-.promptInput:disabled {
-  opacity: 0.5;
+.textarea:disabled {
   cursor: not-allowed;
 }
 
-/* Branches chip — lives inside the right edge of the input wrapper */
-.chip {
-  position: absolute;
-  right: 4px;
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.branchChip {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  pointer-events: auto;
 }
 
-.chipLabel {
+.branchLabel {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: 700;
   color: var(--color-text-muted);
@@ -152,7 +165,7 @@ watch(() => store.activeCommitId, () => {
   align-items: center;
   justify-content: center;
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-mid);
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   font-family: var(--font-mono);
@@ -172,15 +185,15 @@ watch(() => store.activeCommitId, () => {
   cursor: not-allowed;
 }
 
-/* Generate button — unchanged */
 .generateBtn {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-4);
-  background: rgba(157, 217, 210, 0.08);
+  height: 28px;
+  padding: 0 var(--space-4);
+  background: rgba(var(--clr-aqua-rgb), 0.08);
   border: 1px solid var(--color-branch);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   color: var(--color-branch);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -189,15 +202,14 @@ watch(() => store.activeCommitId, () => {
   cursor: pointer;
   transition: background var(--duration-fast), opacity var(--duration-fast);
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .generateBtn:hover:not(:disabled) {
-  background: rgba(157, 217, 210, 0.15);
+  background: rgba(var(--clr-aqua-rgb), 0.15);
 }
 
 .generateBtn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 

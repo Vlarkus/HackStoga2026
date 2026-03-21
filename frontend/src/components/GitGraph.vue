@@ -12,15 +12,14 @@ const store = useProjectStore()
 const displayNodes = computed((): Commit[] => {
   if (!store.isGenerating) return store.graphNodes
   const activeCommit = store.graphNodes.find(n => n.id === store.activeCommitId)!
-  const maxColumn = Math.max(...store.graphNodes.map(n => n.column))
   const placeholder: Commit = {
     id: '__generating__',
     label: '…',
     hash: '……',
     type: 'future',
     parents: [activeCommit.id],
-    lane: Math.max(...store.graphNodes.map(n => n.lane)) + 1,
-    column: maxColumn + 1,
+    lane: activeCommit.lane + 1,
+    column: activeCommit.column + 1,
     content: '',
   }
   return [...store.graphNodes, placeholder]
@@ -57,6 +56,7 @@ function hashChipRect(hash: string) {
 const NODE_R: Record<string, number> = { commit: 11, current: 13, future: 11 }
 
 function handleNodeClick(node: Commit) {
+  if (dragDist.value > 5) return // Ignore click if we panned
   if (node.id === '__generating__') return
   if (node.type === 'future') {
     store.setPreview(node.id)
@@ -65,120 +65,138 @@ function handleNodeClick(node: Commit) {
   }
 }
 
-// ── Zoom / Pan ───────────────────────────────────────────────────────────────
+// ── Viewport ─────────────────────────────────────────────────────────────────
 
 const wrapEl     = ref<HTMLDivElement | null>(null)
 const svgEl      = ref<SVGSVGElement  | null>(null)
 const ready      = ref(false)
 
-const panX       = ref(0)
-const panY       = ref(0)
-const zoom       = ref(1)
-const viewBoxStr = ref('0 0 1 1')
+const vb = ref({ x: 0, y: 0, w: 1, h: 1 })
+const viewBoxStr = computed(() => `${vb.value.x} ${vb.value.y} ${vb.value.w} ${vb.value.h}`)
 
-// Drag state — plain variables (no reactivity needed)
-let isDragging = false
-let lastX      = 0
-let lastY      = 0
+const FOCUS_ZOOM = 1.4  // zoom level when centered on active node
 let resizeObs: ResizeObserver | undefined
 
-function recomputeViewBox() {
+function centerOn(x: number, y: number, z: number) {
   if (!svgEl.value) return
   const { width, height } = svgEl.value.getBoundingClientRect()
-  viewBoxStr.value =
-    `${panX.value} ${panY.value} ${width / zoom.value} ${height / zoom.value}`
+  const vw = width  / z
+  const vh = height / z
+  vb.value = {
+    x: x - vw / 2,
+    y: y - vh / 2,
+    w: vw,
+    h: vh
+  }
 }
 
-function autoFit() {
+function focusActive() {
   if (!svgEl.value) return
-  const positions = [...layout.value.positions.values()]
-  if (positions.length === 0) return
-
-  const PAD      = 60
-  const minX     = Math.min(...positions.map(p => p.x)) - PAD
-  const minY     = Math.min(...positions.map(p => p.y)) - PAD
-  const maxX     = Math.max(...positions.map(p => p.x)) + PAD
-  const maxY     = Math.max(...positions.map(p => p.y)) + PAD
-  const contentW = maxX - minX
-  const contentH = maxY - minY
-
-  const { width, height } = svgEl.value.getBoundingClientRect()
-  const fitZoom = Math.min(5, Math.max(0.1, Math.min(width / contentW, height / contentH)))
-
-  panX.value = minX - (width  / fitZoom - contentW) / 2
-  panY.value = minY - (height / fitZoom - contentH) / 2
-  zoom.value = fitZoom   // must be set before recomputeViewBox
-
-  recomputeViewBox()
+  const pos = layout.value.positions.get(store.activeCommitId)
+  if (!pos) return
+  centerOn(pos.x, pos.y, FOCUS_ZOOM)
   ready.value = true
 }
 
-function onWheel(event: WheelEvent) {
-  event.preventDefault()
-  const rect    = svgEl.value!.getBoundingClientRect()
-  const mouseX  = event.clientX - rect.left
-  const mouseY  = event.clientY - rect.top
-  const delta   = event.deltaY < 0 ? 1.2 : 1 / 1.2
-  const newZoom = Math.min(5, Math.max(0.1, zoom.value * delta))
-
-  panX.value += mouseX * (1 / zoom.value - 1 / newZoom)
-  panY.value += mouseY * (1 / zoom.value - 1 / newZoom)
-  zoom.value  = newZoom
-  recomputeViewBox()
+function zoomIn()  {
+  const centerX = vb.value.x + vb.value.w / 2
+  const centerY = vb.value.y + vb.value.h / 2
+  const factor = 0.8
+  const newW = vb.value.w * factor
+  const newH = vb.value.h * factor
+  vb.value.x = centerX - newW / 2
+  vb.value.y = centerY - newH / 2
+  vb.value.w = newW
+  vb.value.h = newH
+}
+function zoomOut() {
+  const centerX = vb.value.x + vb.value.w / 2
+  const centerY = vb.value.y + vb.value.h / 2
+  const factor = 1.2
+  const newW = vb.value.w * factor
+  const newH = vb.value.h * factor
+  vb.value.x = centerX - newW / 2
+  vb.value.y = centerY - newH / 2
+  vb.value.w = newW
+  vb.value.h = newH
 }
 
-function onPointerDown(e: PointerEvent) {
-  isDragging = true
-  lastX = e.clientX
-  lastY = e.clientY
-  svgEl.value?.setPointerCapture(e.pointerId)
+// ── Panning & Wheel Zoom ─────────────────────────────────────────────────────
+
+const isDragging = ref(false)
+const dragDist = ref(0)
+const lastMouse = { x: 0, y: 0 }
+
+function handleMouseDown(e: MouseEvent) {
+  if (e.button !== 0) return // Only left click
+  isDragging.value = true
+  dragDist.value = 0
+  lastMouse.x = e.clientX
+  lastMouse.y = e.clientY
 }
 
-function onPointerMove(e: PointerEvent) {
-  if (!isDragging) return
-  panX.value -= (e.clientX - lastX) / zoom.value
-  panY.value -= (e.clientY - lastY) / zoom.value
-  lastX = e.clientX
-  lastY = e.clientY
-  recomputeViewBox()
-}
-
-function onPointerUp(e: PointerEvent) {
-  isDragging = false
-  svgEl.value?.releasePointerCapture(e.pointerId)
-}
-
-function onPointerCancel(_e: PointerEvent) {
-  isDragging = false
-}
-
-function zoomToward(newZoom: number) {
-  newZoom = Math.min(5, Math.max(0.1, newZoom))
-  if (!svgEl.value) return
+function handleMouseMove(e: MouseEvent) {
+  if (!isDragging.value || !svgEl.value) return
+  
+  const dx = e.clientX - lastMouse.x
+  const dy = e.clientY - lastMouse.y
+  
+  dragDist.value += Math.sqrt(dx * dx + dy * dy)
+  
   const { width, height } = svgEl.value.getBoundingClientRect()
-  panX.value += (width  / 2) * (1 / zoom.value - 1 / newZoom)
-  panY.value += (height / 2) * (1 / zoom.value - 1 / newZoom)
-  zoom.value  = newZoom
-  recomputeViewBox()
+  const scaleX = vb.value.w / width
+  const scaleY = vb.value.h / height
+  
+  vb.value.x -= dx * scaleX
+  vb.value.y -= dy * scaleY
+  
+  lastMouse.x = e.clientX
+  lastMouse.y = e.clientY
 }
 
-function zoomIn()  { zoomToward(zoom.value * 1.2) }
-function zoomOut() { zoomToward(zoom.value / 1.2) }
+function handleMouseUp() {
+  isDragging.value = false
+}
+
+function handleWheel(e: WheelEvent) {
+  if (!svgEl.value) return
+  e.preventDefault()
+
+  const { width, height, left, top } = svgEl.value.getBoundingClientRect()
+  
+  // Mouse position in SVG coordinates
+  const mouseX = vb.value.x + (e.clientX - left) * (vb.value.w / width)
+  const mouseY = vb.value.y + (e.clientY - top) * (vb.value.h / height)
+
+  const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9
+  
+  const newW = vb.value.w * zoomFactor
+  const newH = vb.value.h * zoomFactor
+  
+  // Keep mouse position fixed in SVG coordinates
+  vb.value.x = mouseX - (e.clientX - left) * (newW / width)
+  vb.value.y = mouseY - (e.clientY - top) * (newH / height)
+  vb.value.w = newW
+  vb.value.h = newH
+}
 
 onMounted(() => {
-  svgEl.value!.addEventListener('wheel', onWheel, { passive: false })
-  resizeObs = new ResizeObserver(() => recomputeViewBox())
+  resizeObs = new ResizeObserver(focusActive)
   resizeObs.observe(wrapEl.value!)
-  nextTick(autoFit)
+  nextTick(focusActive)
+  
+  window.addEventListener('mousemove', handleMouseMove)
+  window.addEventListener('mouseup', handleMouseUp)
 })
 
 onUnmounted(() => {
-  svgEl.value?.removeEventListener('wheel', onWheel)
   resizeObs?.disconnect()
-  isDragging = false
+  window.removeEventListener('mousemove', handleMouseMove)
+  window.removeEventListener('mouseup', handleMouseUp)
 })
 
-watch(displayNodes, () => nextTick(autoFit), { immediate: false })
+watch(() => store.activeCommitId, () => nextTick(focusActive))
+watch(displayNodes, () => nextTick(focusActive), { immediate: false })
 
 // ── Node shape helper ────────────────────────────────────────────────────────
 
@@ -198,11 +216,13 @@ function hexPoints(cx: number, cy: number, r: number): string {
       height="100%"
       preserveAspectRatio="none"
       :viewBox="viewBoxStr"
-      @pointerdown="onPointerDown"
-      @pointermove="onPointerMove"
-      @pointerup="onPointerUp"
-      @pointercancel="onPointerCancel"
-      style="display: block; overflow: visible;"
+      :style="{ 
+        display: 'block', 
+        overflow: 'visible',
+        cursor: isDragging ? 'grabbing' : 'grab'
+      }"
+      @mousedown="handleMouseDown"
+      @wheel="handleWheel"
     >
       <!-- Edges -->
       <g class="edges">
@@ -233,7 +253,7 @@ function hexPoints(cx: number, cy: number, r: number): string {
           :cx="layout.positions.get(node.id)!.x"
           :cy="layout.positions.get(node.id)!.y"
           :r="NODE_R['current'] + 7"
-          fill="rgba(254,215,102,0.07)"
+          fill="rgba(var(--clr-mustard-rgb), 0.07)"
           stroke="var(--color-commit)"
           stroke-opacity="0.9"
           stroke-width="2"
@@ -296,7 +316,7 @@ function hexPoints(cx: number, cy: number, r: number): string {
           :width="hashChipRect(node.hash).w"
           :height="hashChipRect(node.hash).h"
           rx="3"
-          :fill="node.type === 'future' ? 'rgba(157,217,210,0.12)' : 'rgba(254,215,102,0.1)'"
+          :fill="node.type === 'future' ? 'rgba(var(--clr-aqua-rgb), 0.12)' : 'rgba(var(--clr-mustard-rgb), 0.1)'"
         />
 
         <!-- Hash chip: text -->
@@ -311,15 +331,6 @@ function hexPoints(cx: number, cy: number, r: number): string {
           letter-spacing="0.05em"
         >{{ node.hash }}</text>
 
-        <!-- Label below node -->
-        <text
-          :x="layout.positions.get(node.id)!.x"
-          :y="layout.positions.get(node.id)!.y + 30"
-          text-anchor="middle"
-          font-family="Space Mono, monospace"
-          font-size="12"
-          fill="var(--color-text-muted)"
-        >{{ node.label }}</text>
       </g>
     </svg>
 
@@ -327,7 +338,6 @@ function hexPoints(cx: number, cy: number, r: number): string {
     <div :class="$style.controls">
       <button @click="zoomIn">+</button>
       <button @click="zoomOut">−</button>
-      <button @click="autoFit">⊡</button>
     </div>
   </div>
 </template>

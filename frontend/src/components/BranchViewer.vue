@@ -11,8 +11,7 @@ const store = useProjectStore()
       v-html="store.previewCommit?.content"
     />
     <div :class="$style.footer" v-if="store.previewCommit">
-      <span :class="$style.label">{{ store.previewCommit.label }}</span>
-      <span :class="$style.hash">{{ store.previewCommit.hash }}</span>
+<span :class="$style.hash">{{ store.previewCommit.hash }}</span>
       <button :class="$style.adoptBtn" @click="store.adoptPreview()">
         ADOPT
       </button>
@@ -75,15 +74,15 @@ const store = useProjectStore()
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--color-branch);
-  background: rgba(157, 217, 210, 0.08);
+  background: rgba(var(--clr-aqua-rgb), 0.08);
   padding: 2px var(--space-2);
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(157, 217, 210, 0.2);
+  border: 1px solid rgba(var(--clr-aqua-rgb), 0.2);
 }
 
 .adoptBtn {
   padding: var(--space-1) var(--space-3);
-  background: rgba(254, 215, 102, 0.08);
+  background: rgba(var(--clr-mustard-rgb), 0.08);
   border: 1px solid var(--color-commit);
   border-radius: var(--radius-sm);
   color: var(--color-commit);
@@ -96,6 +95,6 @@ const store = useProjectStore()
 }
 
 .adoptBtn:hover {
-  background: rgba(254, 215, 102, 0.15);
+  background: rgba(var(--clr-mustard-rgb), 0.15);
 }
 </style>

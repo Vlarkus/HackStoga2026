@@ -119,10 +119,11 @@ export const useProjectStore = defineStore('project', {
     async generateFutures(count: number, userPrompt?: string) {
       this.isGenerating = true
 
+      // Clear any existing futures before generating new ones
+      this.commits = this.commits.filter(c => c.type !== 'future')
+
       const activeCommit = this.commits.find(c => c.id === this.activeCommitId)!
-      const maxLane = Math.max(...this.commits.map(c => c.lane))
-      const maxColumn = Math.max(...this.commits.map(c => c.column))
-      const newColumn = maxColumn + 1
+      const newColumn = activeCommit.column + 1
 
       // Strip HTML tags to get plain text for the prompt
       const plainText = activeCommit.content.replace(/<[^>]*>/g, ' ').trim()
@@ -150,7 +151,7 @@ export const useProjectStore = defineStore('project', {
           hash: Math.random().toString(16).slice(2, 8),
           type: 'future',
           parents: [activeCommit.id],
-          lane: maxLane + 1 + i,
+          lane: activeCommit.lane + 1 + i,
           column: newColumn,
           content: activeCommit.content + '<p>' + pred.content + '</p>',
         })

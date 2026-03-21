@@ -19,10 +19,10 @@ export interface GraphLayout {
   viewBoxHeight: number
 }
 
-const STEP_X = 90
-const STEP_Y = 60
-const PADDING_X = 40
-const PADDING_Y = 40
+const STEP_X = 130
+const STEP_Y = 80
+const PADDING_X = 56
+const PADDING_Y = 56
 
 export function computeGraphLayout(nodes: GraphNode[]): GraphLayout {
   const positions = new Map<string, NodePosition>()

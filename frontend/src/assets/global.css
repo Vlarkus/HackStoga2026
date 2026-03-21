@@ -17,28 +17,37 @@
    ============================================ */
 
 :root {
-  /* --- Palette --- */
-  --clr-evergreen:     #041b15;
-  --clr-evergreen-mid: #0a2e23;
-  --clr-evergreen-hi:  #113d2f;
-  --clr-mustard:       #fed766;
+  /* --- Palette (Slate Sage Dark Mode) --- */
+  --clr-evergreen-rgb: 22, 38, 33;
+  --clr-evergreen:     rgb(var(--clr-evergreen-rgb));
+  --clr-evergreen-mid: #1f362f;
+  --clr-evergreen-hi:  #2a473e;
+
+  --clr-mustard-rgb:   254, 215, 102;
+  --clr-mustard:       rgb(var(--clr-mustard-rgb));
   --clr-mustard-dim:   #c9a83e;
-  --clr-aqua:          #9dd9d2;
+
+  --clr-aqua-rgb:      157, 217, 210;
+  --clr-aqua:          rgb(var(--clr-aqua-rgb));
   --clr-aqua-dim:      #6db8b0;
-  --clr-olive:         #7a6c5d;
+
+  --clr-olive-rgb:     122, 108, 93;
+  --clr-olive:         rgb(var(--clr-olive-rgb));
   --clr-olive-dim:     #574f43;
-  --clr-orange:        #ff6b35;
+
+  --clr-orange-rgb:    255, 107, 53;
+  --clr-orange:        rgb(var(--clr-orange-rgb));
   --clr-orange-dim:    #cc4f1f;
 
   /* --- Semantic colors --- */
   --color-bg:           var(--clr-evergreen);
   --color-bg-raised:    var(--clr-evergreen-mid);
   --color-bg-float:     var(--clr-evergreen-hi);
-  --color-text:         #e8f0ed;
-  --color-text-muted:   var(--clr-olive);
+  --color-text:         #ecf2f0;
+  --color-text-muted:   #8ca39c;
   --color-text-faint:   #3d5c50;
   --color-border:       var(--clr-evergreen-hi);
-  --color-border-mid:   #1e4a38;
+  --color-border-mid:   #34524a;
 
   /* Branch/commit semantic */
   --color-commit:       var(--clr-mustard);
@@ -84,11 +93,11 @@
   --radius-full: 9999px;
 
   /* --- Shadows / glows --- */
-  --glow-commit:   0 0 12px rgba(254, 215, 102, 0.25);
-  --glow-branch:   0 0 12px rgba(157, 217, 210, 0.2);
-  --glow-conflict: 0 0 12px rgba(255, 107, 53, 0.3);
-  --shadow-card:   0 2px 16px rgba(0, 0, 0, 0.5);
-  --shadow-float:  0 8px 32px rgba(0, 0, 0, 0.6);
+  --glow-commit:   0 0 12px rgba(var(--clr-mustard-rgb), 0.25);
+  --glow-branch:   0 0 12px rgba(var(--clr-aqua-rgb), 0.2);
+  --glow-conflict: 0 0 12px rgba(var(--clr-orange-rgb), 0.3);
+  --shadow-card:   0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-float:  0 8px 32px rgba(0, 0, 0, 0.5);
 
   /* --- Transitions --- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -212,6 +221,33 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* ============================================
+   SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--clr-evergreen);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--clr-evergreen-hi);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-olive-dim);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--clr-evergreen-hi) var(--clr-evergreen);
+}
+
+/* ============================================
    LAYOUT UTILITIES
    ============================================ */
 
@@ -293,9 +329,9 @@ input:focus, textarea:focus, select:focus {
   border: 1px solid currentColor;
 }
 
-.badge--commit   { color: var(--color-commit);   background: rgba(254,215,102,0.08); }
-.badge--branch   { color: var(--color-branch);   background: rgba(157,217,210,0.08); }
-.badge--conflict { color: var(--color-conflict); background: rgba(255,107,53,0.08);  }
+.badge--commit   { color: var(--color-commit);   background: rgba(var(--clr-mustard-rgb), 0.08); }
+.badge--branch   { color: var(--color-branch);   background: rgba(var(--clr-aqua-rgb), 0.08); }
+.badge--conflict { color: var(--color-conflict); background: rgba(var(--clr-orange-rgb), 0.08);  }
 
 /* Button */
 .btn {
@@ -317,7 +353,7 @@ input:focus, textarea:focus, select:focus {
 
 .btn--primary {
   background: var(--color-commit);
-  color: var(--clr-evergreen);
+  color: white;
   border-color: var(--color-commit);
 }
 
@@ -334,7 +370,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .btn--ghost:hover {
-  background: rgba(157, 217, 210, 0.08);
+  background: rgba(var(--clr-aqua-rgb), 0.08);
   box-shadow: var(--glow-branch);
 }
 
@@ -345,7 +381,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .btn--danger:hover {
-  background: rgba(255, 107, 53, 0.08);
+  background: rgba(var(--clr-orange-rgb), 0.08);
   box-shadow: var(--glow-conflict);
 }
 
@@ -354,7 +390,7 @@ input:focus, textarea:focus, select:focus {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--color-commit);
-  background: rgba(254, 215, 102, 0.1);
+  background: rgba(var(--clr-mustard-rgb), 0.1);
   padding: 2px var(--space-2);
   border-radius: var(--radius-sm);
   letter-spacing: 0.05em;
