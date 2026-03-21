@@ -5,6 +5,7 @@
     "build": "npm run build --prefix frontend && tsc -p backend/tsconfig.json"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "shadcn": "^4.1.0"
   }
 }

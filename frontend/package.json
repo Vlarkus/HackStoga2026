@@ -7,6 +7,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@isomorphic-git/lightning-fs": "^4.6.2",
+    "isomorphic-git": "^1.37.4",
     "vue": "^3.4.27",
     "vue-router": "^4.3.3"
   },
