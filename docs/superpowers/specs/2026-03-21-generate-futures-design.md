@@ -15,13 +15,14 @@ Add the core pitch feature: a Pinia-backed project state that connects the MAIN 
 
 ### Modified files
 - `frontend/src/components/GitGraph.vue` — reads nodes from store instead of hardcoded MOCK_NODES; handles node click
+- `frontend/src/components/MainEditor.vue` — reads initial content from store; watches `activeCommitId` to update editor
 - `frontend/src/views/HomeView.vue` — adds GenerateBar below GIT NODES, adds BranchViewer panel (conditionally rendered)
+- `frontend/src/main.ts` — registers Pinia
 
 ### Unchanged
 - `frontend/src/components/Panel.vue`
-- `frontend/src/components/MainEditor.vue`
 - `frontend/src/composables/useEditorPersistence.ts`
-- `frontend/src/composables/useGraphLayout.ts`
+- `frontend/src/composables/useGraphLayout.ts` — `Commit` is structurally identical to `GraphNode` (same fields); TypeScript's structural typing means `Commit[]` satisfies `GraphNode[]` without any changes to this file
 
 ## Dependencies
 
@@ -47,7 +48,7 @@ interface Commit {
 }
 ```
 
-`Commit` replaces `GraphNode` from `useGraphLayout.ts`. `useGraphLayout.ts` is updated to accept `Commit[]` instead of `GraphNode[]` (same fields, just unified type). `GraphNode` export is removed.
+`Commit` has the same fields as `GraphNode` from `useGraphLayout.ts`. `useGraphLayout.ts` is unchanged — `Commit[]` is structurally compatible with `GraphNode[]` in TypeScript. `GraphNode` remains exported and used as the parameter type for `computeGraphLayout`; `GitGraph.vue` passes `store.graphNodes` (typed as `Commit[]`) which satisfies `GraphNode[]` structurally.
 
 ## Store: `useProjectStore`
 
@@ -69,7 +70,7 @@ actions:
   setPreview(id: string)     // sets previewCommitId
   clearPreview()             // sets previewCommitId = null
   generateFutures(count: number): Promise<void>
-  adoptPreview()             // promotes previewCommit to current, old current → 'commit', sets activeCommitId
+  adoptPreview()             // promotes previewCommit to current, old current → 'commit', removes all other future commits from the store, sets activeCommitId, clears previewCommitId
 ```
 
 ### `generateFutures(count)` logic
@@ -171,7 +172,7 @@ Content:
 2. User clicks `GENERATE` (count = 3) → `isGenerating = true` → 400ms → 3 future nodes appended → `isGenerating = false` → GitGraph re-renders reactively
 3. User clicks future node → `previewCommitId` set → BranchViewer panel appears with that commit's content
 4. User clicks a different future node → `previewCommitId` swaps → BranchViewer updates
-5. User clicks `ADOPT` → `adoptPreview()`: future becomes `current`, old `current` becomes `commit`, `activeCommitId` updated, MAIN content updates, `previewCommitId` cleared, BranchViewer closes
+5. User clicks `ADOPT` → `adoptPreview()`: all other `future` commits removed from store, adopted future becomes `current`, old `current` becomes `commit`, `activeCommitId` updated, MAIN content updates, `previewCommitId` cleared, BranchViewer closes
 6. User clicks a past commit node → `setActive(id)` → MAIN loads that commit's content
 
 ## Styling
@@ -185,7 +186,7 @@ Content:
 ## Constraints
 
 - `generateFutures` uses a module-level `let poolIndex = 0` that increments by `count` each call, so repeated generates cycle through different continuations
-- `adoptPreview` must find the old `current` commit and set its type to `'commit'` before promoting the future
+- `adoptPreview` must: (1) remove all `future` commits except the one being adopted, (2) set old `current` to `'commit'`, (3) set adopted commit to `'current'`, (4) set `activeCommitId`, (5) clear `previewCommitId`
 - GitGraph must handle `store.graphNodes` being reactive (use `computed` or direct store access, not a local copy)
 - BranchViewer `v-html` needs same CSS resets as MainEditor: `p { max-width: none }`, `h1/h2` font-size overrides
 - GenerateBar is positioned absolutely in HomeView's canvas, not slotted into the GIT NODES Panel — this keeps Panel.vue unchanged
